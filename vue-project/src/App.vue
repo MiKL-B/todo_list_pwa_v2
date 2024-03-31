@@ -36,7 +36,7 @@
                       </span>
                       <span class="todo-text">{{ todo.name }}</span>
                       <div class="tags-todolist">
-                        <span class="tag" v-for="(tag, index) in todo.tags" :key="tag.id">
+                        <span class="tag" v-for="tag in todo.tags" :key="tag.id">
                           <i class="fa-solid fa-tag"></i>
                           <span>{{ tag }}</span>
                         </span>
@@ -287,13 +287,15 @@ export default {
       localStorage.setItem("tags", JSON.stringify(this.tags));
     },
     deleteTag(index) {
-      this.tags.splice(index, 1);
-      //remove tag inside the todo
-      let iremove = this.todos.indexOf(this.tags[index]);
       for (let i = 0; i < this.todos.length; i++) {
-        this.todos[i].tags.splice(iremove, 1)
+        for (let j = 0; j < this.todos[i].tags.length; j++) {
+          if (this.tags[index] == this.todos[i].tags[j]) {
+            this.todos[i].tags.splice(j, 1)
+          }
+        }
       }
-      this.saveTodo()
+      this.tags.splice(index, 1);
+      this.saveTodo();
       this.saveTag();
     }
   }
@@ -327,10 +329,12 @@ body {
 i {
   cursor: pointer;
 }
-.tag{
+
+.tag {
   display: flex;
-  gap:4px;
+  gap: 4px;
 }
+
 .tags-todolist {
   display: flex;
   gap: 6px;
