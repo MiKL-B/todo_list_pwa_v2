@@ -3,7 +3,7 @@
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
                 :placeholder="type == 'todo' ? 'Add a new task' : 'Add a new tag'" @keydown="handleEnterKey"
-                :value="newElement" @input="inputValue($event.target.value)" />
+                :modelValue="newElement" @input="onInput" />
         </div>
         <div class="control">
             <button id="button" class="button is-success" @click="addElement">Submit</button>
@@ -27,15 +27,17 @@ export default {
     methods: {
         addElement() {
             this.$emit('addElement')
+            // clear input value here
         },
-        inputValue(newValue) {
-            this.$emit('update:newElement', newValue)
-        },
+
         handleEnterKey(event) {
             if (event.key == 'Enter') {
-                this.$emit('handlekey',event)
+                this.$emit('handlekey', event)
             }
         },
+        onInput(event) {
+            this.$emit('update:modelValue', event.target.value)
+        }
     }
 }
 </script>

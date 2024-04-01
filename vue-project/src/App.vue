@@ -15,7 +15,7 @@
           </div>
           <!-- add new task -->
           <div v-if="!tabIsActive">
-            <InputElement type="todo" @addElement="addTodo"/>
+            <InputElement type="todo" @addElement="addTodo" v-model="newTodo" @handlekey="handleEnterKeyTodo"/>
             <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index,todo)" @delete="deleteTodo(index)" />
           </div>
           <!-- add new tag -->
