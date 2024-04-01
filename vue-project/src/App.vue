@@ -15,91 +15,18 @@
           </div>
           <!-- add new task -->
           <div v-if="!tabIsActive">
-            <div id="add-task" class="field has-addons">
-              <div class="control is-expanded">
-                <input id="input" class="input" type="text" placeholder="Add a new task..." v-model="newTodo"
-                  @keydown="handleEnterKeyTodo" />
-              </div>
-              <div class="control">
-                <button id="button" class="button is-success" @click="addTodo">Submit</button>
-              </div>
-            </div>
-
-          
-            <div id="todo-list">
-       
-              <!-- <div v-for="(todo, index) in todos" :key="index" class="card mb-2">
-                <div class="card-content py-4">
-
-                  <div class="content">
-               
-                    <div class="todo-left">
-                      <span class="icon" :class="todo.completed ? 'has-text-success' : ''">
-                        <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
-                          @click="markAsCompleted(index)"></i>
-                      </span>
-                   
-                      <div class="todo-event" @click="console.log('test')">
-                        <span class="todo-text">{{ todo.name }}</span>
-                      </div>
-                    </div>
-                  
-                    <div class="tags-todolist">
-                      <span class="tag" v-for="tag in todo.tags" :key="tag.id">
-                        <i class="fa-solid fa-tag"></i>
-                        <span>{{ tag }}</span>
-                      </span>
-                    </div>
-                 
-                    <div class="is-size-5 todo-right">
-                      <span class="icon mx-4">
-                        <i class="fa-solid fa-pen" @click="openModal(index, todo)"></i>
-                      </span>
-                      <span class="icon has-text-danger">
-                        <i class="fa-regular fa-trash-can" @click="deleteTodo(index)"></i>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>-->
-         
-              <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @delete="deleteTodo(index)"/> 
-              <Card type="tag" v-for="(tag, index) in tags" :key="index" :element="tag" @delete="deleteTag(index)"/> 
-            </div>
-           
-
+            <InputElement type="todo" @addElement="addTodo"/>
+            <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index,todo)" @delete="deleteTodo(index)" />
           </div>
           <!-- add new tag -->
           <div v-else>
-            <div id="add-tag" class="field has-addons">
-              <div class="control is-expanded">
-                <input class="input" type="text" placeholder="Add a new tag..." v-model="newTag"
-                  @keydown="handleEnterKeyTag" />
-              </div>
-              <div class="control">
-                <button id="button" class="button is-success" @click="addTag">Submit</button>
-              </div>
-            </div>
-            <div class="tag-list">
-              <div v-for="(tag, index) in tags" :key="index" class="card mb-2">
-                <div class="card-content py-4">
-                  <div class="content">
-                    <div class="is-size-5">
-                      <span class="icon">
-                        <i class="fa-solid fa-tag"></i>
-                      </span>
-                      <span class="tag-text">{{ tag.name }}</span>
-                    </div>
-                    <span class="icon has-text-danger is-size-5">
-                      <i class="fa-regular fa-trash-can" @click="deleteTag(index)"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- handleEnterKeyTag  v-model=newTag -->
+            <InputElement type="tag" @addElement="addTag"/>
+            <Card type="tag" v-for="(tag, index) in tags" :key="index" :element="tag" @delete="deleteTag(index)" />
           </div>
     </div>
   </section>
+
   <!-- modal -->
   <div id="modal" class="modal px-4">
     <div class="modal-background"></div>
@@ -109,6 +36,11 @@
       </header>
       <section class="modal-card-body">
         <!-- name -->
+        <Field name="Name"/>
+        <Field name="Date"/>
+        <!-- add template content for text area || select -->
+        <Field name="Description"/>
+
         <div class="field">
           <label class="label">Name</label>
           <div class="control">
@@ -177,11 +109,13 @@
 
 
 <script>
- import Card from '@/components/Card.vue'
+import InputElement from '@/components/InputElement.vue'
+import Card from '@/components/Card.vue'
+import Field from '@/components/Field.vue'
 export default {
   name: "App",
   components: {
-    Card
+    InputElement,Card, Field
   },
   data() {
     return {
@@ -295,7 +229,7 @@ export default {
       }
       let tag = {
         name: this.newTag,
-        color:"",
+        color: "",
       }
       this.tags.push(tag)
       this.clearInputValue()
@@ -330,27 +264,6 @@ body {
 .section {
   padding: 1rem 1rem 0 1rem;
 }
-
-/* .content {
-  display: flex;
-  justify-content: space-between;
-  border: 1px solid green;
-}
-
-.todo-left {
-  display: flex;
-
-}
-
-.todo-right {
-  display: flex;
-}
-
-.todo-event {
-  border: 1px solid blue;
-} */
-
-
 
 i {
   cursor: pointer;
