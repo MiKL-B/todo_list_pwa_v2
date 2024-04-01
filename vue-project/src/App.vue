@@ -24,26 +24,35 @@
                 <button id="button" class="button is-success" @click="addTodo">Submit</button>
               </div>
             </div>
+
+          
             <div id="todo-list">
-              <!-- card begin -->
-              <div v-for="(todo, index) in todos" :key="index" class="card mb-2">
+       
+              <!-- <div v-for="(todo, index) in todos" :key="index" class="card mb-2">
                 <div class="card-content py-4">
+
                   <div class="content">
-                    <div>
+               
+                    <div class="todo-left">
                       <span class="icon" :class="todo.completed ? 'has-text-success' : ''">
                         <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
                           @click="markAsCompleted(index)"></i>
                       </span>
-                      <span class="todo-text">{{ todo.name }}</span>
-                      <div class="tags-todolist">
-                        <span class="tag" v-for="tag in todo.tags" :key="tag.id">
-                          <i class="fa-solid fa-tag"></i>
-                          <span>{{ tag }}</span>
-                        </span>
+                   
+                      <div class="todo-event" @click="console.log('test')">
+                        <span class="todo-text">{{ todo.name }}</span>
                       </div>
                     </div>
-                    <div>
-                      <span class="icon">
+                  
+                    <div class="tags-todolist">
+                      <span class="tag" v-for="tag in todo.tags" :key="tag.id">
+                        <i class="fa-solid fa-tag"></i>
+                        <span>{{ tag }}</span>
+                      </span>
+                    </div>
+                 
+                    <div class="is-size-5 todo-right">
+                      <span class="icon mx-4">
                         <i class="fa-solid fa-pen" @click="openModal(index, todo)"></i>
                       </span>
                       <span class="icon has-text-danger">
@@ -52,10 +61,13 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <!-- card end -->
-
+              </div>-->
+         
+              <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @delete="deleteTodo(index)"/> 
+              <Card type="tag" v-for="(tag, index) in tags" :key="index" :element="tag" @delete="deleteTag(index)"/> 
             </div>
+           
+
           </div>
           <!-- add new tag -->
           <div v-else>
@@ -72,13 +84,13 @@
               <div v-for="(tag, index) in tags" :key="index" class="card mb-2">
                 <div class="card-content py-4">
                   <div class="content">
-                    <div>
+                    <div class="is-size-5">
                       <span class="icon">
                         <i class="fa-solid fa-tag"></i>
                       </span>
-                      <span class="tag-text">{{ tag }}</span>
+                      <span class="tag-text">{{ tag.name }}</span>
                     </div>
-                    <span class="icon has-text-danger">
+                    <span class="icon has-text-danger is-size-5">
                       <i class="fa-regular fa-trash-can" @click="deleteTag(index)"></i>
                     </span>
                   </div>
@@ -126,7 +138,7 @@
             <div class="select is-fullwidth">
               <select v-model="selectedTag">
                 <option disabled selected>Select a tag</option>
-                <option v-for="(tag, index) in tags" :key="index" :value="tag">{{ tag }}</option>
+                <option v-for="(tag, index) in tags" :key="index" :value="tag">{{ tag.name }}</option>
               </select>
 
             </div>
@@ -140,7 +152,7 @@
           <div class="control tags-todolist">
             <span class="tag" v-for="(tag, index) in selectedTodo.tags" :key="tag.id">
               <i class="fa-solid fa-tag"></i>
-              <span>{{ tag }}</span>
+              <span>{{ tag.name }}</span>
               <a class="tag is-delete" @click="deleteTagTodo(index)"></a>
             </span>
           </div>
@@ -165,8 +177,12 @@
 
 
 <script>
+ import Card from '@/components/Card.vue'
 export default {
   name: "App",
+  components: {
+    Card
+  },
   data() {
     return {
       tabIsActive: false,
@@ -200,11 +216,9 @@ export default {
         completed: false,
         tags: [],
       }
-      console.log(todo)
       this.todos.push(todo)
       this.clearInputValue()
       this.saveTodo()
-      console.log(this.todos)
     },
     updateTodo(index, todo) {
       this.todos[index] = { ...todo };
@@ -279,7 +293,11 @@ export default {
       if (this.tags.includes(this.newTag)) {
         return;
       }
-      this.tags.push(this.newTag)
+      let tag = {
+        name: this.newTag,
+        color:"",
+      }
+      this.tags.push(tag)
       this.clearInputValue()
       this.saveTag()
     },
@@ -289,7 +307,7 @@ export default {
     deleteTag(index) {
       for (let i = 0; i < this.todos.length; i++) {
         for (let j = 0; j < this.todos[i].tags.length; j++) {
-          if (this.tags[index] == this.todos[i].tags[j]) {
+          if (this.tags[index].name == this.todos[i].tags[j].name) {
             this.todos[i].tags.splice(j, 1)
           }
         }
@@ -313,31 +331,39 @@ body {
   padding: 1rem 1rem 0 1rem;
 }
 
-.content {
+/* .content {
   display: flex;
   justify-content: space-between;
+  border: 1px solid green;
 }
 
-.todo-text,
-.tag-text {
-  width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.todo-left {
+  display: flex;
+
 }
+
+.todo-right {
+  display: flex;
+}
+
+.todo-event {
+  border: 1px solid blue;
+} */
+
+
 
 i {
   cursor: pointer;
 }
 
-.tag {
+/* .tag {
   display: flex;
   gap: 4px;
-}
+} */
 
-.tags-todolist {
+/* .tags-todolist {
   display: flex;
   gap: 6px;
   margin: 6px 0;
-}
+} */
 </style>

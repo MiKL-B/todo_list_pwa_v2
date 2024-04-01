@@ -1,42 +1,92 @@
 <template>
-    <div  class="card mb-2">
-        <div class="card-content py-4">
-            <div class="content">
-                <div>
-                    <span class="icon" :class="todo.completed ? 'has-text-success' : ''">
-                        <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
-                            @click="markAsCompleted(index)"></i>
-                    </span>
-                    <span class="todo-text">{{ todo.name }}</span>
-                    <div class="tags-todolist">
-                        <span class="tag" v-for="(tag, index) in todo.tags" :key="tag.id">
-                            <i class="fa-solid fa-tag"></i>
-                            <span>{{ tag }}</span>
-                        </span>
-                    </div>
-                </div>
-                <div>
-                    <span class="icon">
-                        <i class="fa-solid fa-pen" @click="openModal(index, todo)"></i>
-                    </span>
-                    <span class="icon has-text-danger">
-                        <i class="fa-regular fa-trash-can" @click="deleteTodo(index)"></i>
-                    </span>
-                </div>
+    <div class="card mb-2">
+        <div class="card-left">
+            <!-- if todo -->
+            <span v-if="type == 'todo'" class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
+                <i class="fa-regular fa-circle-check" :class="element.completed ? 'fa-circle-check' : 'fa-circle'"
+                    @click="markAsCompleted(index)"></i>
+            </span>
+            <span v-else class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
+                <i class="fa-solid fa-tag"></i>
+            </span>
+            <div class="card-info" @click="readElement(index, element)">
+                <span class="card-text">{{ element.name }}</span>
+            </div>
+            <!-- if todo -->
+            <div v-if="type == 'todo'">
+                <span class="tag" v-for="(tag, index) in element.tags" :key="tag.id">
+                    <i class="fa-solid fa-tag"></i>
+                    <span>{{ tag.name }}</span>
+                </span>
             </div>
         </div>
+        <div class="card-right is-size-5 ml-2">
+            <span class="icon">
+                <i class="fa-solid fa-pen" @click="editElement(index, element)"></i>
+            </span>
+            <span class="icon has-text-danger mx-1">
+                <i class="fa-regular fa-trash-can" @click="deleteElement(index)"></i>
+            </span>
+        </div>
     </div>
-    <!-- card end -->
-
-
 </template>
 
 
 <script>
 export default {
-    name: "Card"
+    name: "Card",
+    props: {
+        element:
+        {
+            type: Object,
+            required: true,
+        },
+        type: {
+            type: String,
+            required: true,
+        }
+    },
+    methods: {
+        markAsCompleted(index) {
+            this.$emit('markAsCompleted', index)
+        },
+        readElement(index, element) {
+            this.$emit('read', [index, element])
+        },
+        editElement(index, element) {
+            this.$emit('edit', [index, element])
+        },
+        deleteElement(index) {
+            this.$emit('delete', index)
+        }
+    }
 }
 </script>
 
 
-<style></style>
+<style>
+.card {
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-left,
+.card-right {
+    display: flex;
+    align-items: center;
+
+}
+
+.card-info {
+
+    width: 225px;
+    padding: 1rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-text {
+    max-width: 100px;
+}
+</style>
