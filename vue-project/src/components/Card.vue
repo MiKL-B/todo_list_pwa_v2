@@ -1,5 +1,5 @@
 <template>
-    <div class="card mb-2">
+    <div class="card mb-2 px-1">
         <div class="card-left">
             <!-- if todo -->
             <span v-if="type == 'todo'" class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
@@ -48,7 +48,7 @@ export default {
     },
     methods: {
         markAsCompleted(index) {
-            this.$emit('markAsCompleted', index)
+            this.$emit('mark', index)
         },
         readElement(index, element) {
             this.$emit('read', [index, element])

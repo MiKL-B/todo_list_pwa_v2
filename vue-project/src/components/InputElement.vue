@@ -3,7 +3,7 @@
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
                 :placeholder="type == 'todo' ? 'Add a new task' : 'Add a new tag'" @keydown="handleEnterKey"
-                :modelValue="newElement" @input="onInput" />
+                :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
             <button id="button" class="button is-success" @click="addElement">Submit</button>
@@ -19,15 +19,14 @@ export default {
             type: String,
             required: true,
         },
-        newElement: {
+        modelValue: {
             type: String,
-            required: true,
+            required: false,
         }
     },
     methods: {
         addElement() {
             this.$emit('addElement')
-            // clear input value here
         },
 
         handleEnterKey(event) {
