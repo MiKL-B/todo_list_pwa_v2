@@ -3,26 +3,9 @@
     <div class="container">
       <h1 class="title">TodoList PWA</h1>
       <h2 class="subtitle is-3">{{ remaining <= 1 ? remaining + " task" : remaining + ' tasks' }} to do</h2>
-          <div class="tabs is-centered">
-            <ul>
-              <li :class="tabIsTag ? '' : 'is-active'">
-                <a @click="tabIsTag = false">Tasks</a>
-              </li>
-              <li :class="tabIsTag ? 'is-active' : ''">
-                <a @click="tabIsTag = true">Tags</a>
-              </li>
-            </ul>
-          </div>
-          <div v-if="!tabIsTag">
-            <InputElement type="todo" @addElement="addItem" v-model="newTodo" @handlekey="handleEnterKey" />
-            <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index, todo)"
-              @delete="deleteItem(index)" @mark="markAsCompleted(index)" />
-          </div>
-          <div v-else>
-            <InputElement type="tag" @addElement="addItem" v-model="newTag" @handlekey="handleEnterKey" />
-            <Card type="tag" v-for="(tag, index) in tags" :key="index" :element="tag" @edit="openModal(index, tag)"
-              @delete="deleteItem(index)" />
-          </div>
+          <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
+          <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index, todo)"
+            @delete="deleteItem(index)" @mark="markAsCompleted(index)" />
     </div>
   </section>
 
@@ -72,7 +55,7 @@
           <!-- <button id="bt_SaveChanges" class="button is-success" @click="saveChanges(selectedTodo.index, selectedTodo)">
             Save changes
           </button> -->
-          <button id="bt_CloseModal" class="button" @click="closeModal">Cancel</button>
+          <button id="bt_CloseModal" class="button" @click="closeModal">Close</button>
         </div>
       </footer>
     </div>
@@ -84,7 +67,6 @@
 import InputElement from '@/components/InputElement.vue';
 import Card from '@/components/Card.vue';
 import Field from '@/components/Field.vue';
-import { setTransitionHooks } from 'vue';
 
 export default {
   name: "App",
@@ -93,14 +75,9 @@ export default {
   },
   data() {
     return {
-      tabIsTag: false,
+      newItem: "",
       selectedItem: {},
-      // selectedTodo: {},
-      // selectedTag: "",
-      newTodo: "",
-      newTag: "",
       todos: JSON.parse(localStorage.getItem("todos")) || [],
-      tags: JSON.parse(localStorage.getItem('tags')) || []
     }
   },
   computed: {
@@ -110,46 +87,24 @@ export default {
   },
   methods: {
     addItem() {
-      if (!this.tabIsTag) {
-        if (this.newTodo == "") {
-          return;
-        }
-        let todo = {
-          name: this.newTodo,
-          date: this.getDate(),
-          description: "",
-          completed: false,
-          tags: [],
-        }
-        this.todos.push(todo)
+      if (this.newItem == "") {
+        return;
       }
-      else {
-        if (this.newTag == "") {
-          return;
-        }
-        if (this.tags.includes(this.newTag)) {
-          return;
-        }
-        let tag = {
-          name: this.newTag,
-          date: this.getDate(),
-          color: "",
+      let todo = {
+        name: this.newItem,
+        date: this.getDate(),
+        description: "",
+        completed: false,
+        tags: [],
+      }
+      this.todos.push(todo)
 
-        }
-        this.tags.push(tag)
-      }
       this.saveItem()
       this.clearInputValue()
     },
     updateItem(index, item) {
-      if (!this.tabIsTag) {
-        this.todos[index] = { ...item };
-        this.todos[index].date = this.getDate()
-      }
-      else{
-        this.tags[index] = { ...item};
-        this.tags[index].date = this.getDate()
-      }
+      this.todos[index] = { ...item };
+      this.todos[index].date = this.getDate()
       this.saveItem();
     },
     deleteItem(index) {
@@ -169,11 +124,7 @@ export default {
       this.saveItem();
     },
     saveItem() {
-      if (!this.tabIsTag) {
-        localStorage.setItem("todos", JSON.stringify(this.todos));
-      } else {
-        localStorage.setItem("tags", JSON.stringify(this.tags));
-      }
+      localStorage.setItem("todos", JSON.stringify(this.todos));
     },
     markAsCompleted(index) {
       this.todos[index].completed = !this.todos[index].completed;
@@ -186,8 +137,7 @@ export default {
       }
     },
     clearInputValue() {
-      this.newTodo = "";
-      this.newTag = "";
+      this.newItem = "";
     },
     getDate() {
       let currentTime = new Date().toLocaleTimeString();
@@ -203,32 +153,6 @@ export default {
     closeModal() {
       document.getElementById('modal').classList.remove('is-active')
     },
-    
-    // review with selected item
-    // saveChanges(index, item) {
-    //   if (this.selectedItem.name == "") {
-    //     this.selectedItem.name = "New item";
-    //   }
-    //   this.selectedItem = { ...item };
-    //   // this.selectedTodo.index = index;
-    //   // this.selectedTodo.completed = todo.completed;
-    //   this.updateTodo(index, this.selectedTodo);
-    //   this.saveTodo();
-    //   this.closeModal();
-    // },
-    // addTagTodo() {
-    //   if (this.selectedTag == "") {
-    //     return;
-    //   }
-    //   if (this.selectedTodo.tags.includes(this.selectedTag)) {
-    //     return;
-    //   }
-    //   this.selectedTodo.tags.push(this.selectedTag)
-    // },
-    // deleteTagTodo(index) {
-    //   this.selectedTodo.tags.splice(index, 1)
-    // },
-
   }
 }
 </script>
@@ -251,9 +175,9 @@ i {
 .tag {
   display: flex;
   gap: 4px;
-} 
+}
 
- .tags-todolist {
+.tags-todolist {
   display: flex;
   gap: 6px;
   margin: 6px 0;

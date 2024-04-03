@@ -2,7 +2,7 @@
     <div class="field has-addons">
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
-                :placeholder="type == 'todo' ? 'Add a new task' : 'Add a new tag'" @keydown="handleEnterKey"
+                placeholder="Add a new task" @keydown="handleEnterKey"
                 :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
@@ -15,10 +15,6 @@
 export default {
     name: "InputElement",
     props: {
-        type: {
-            type: String,
-            required: true,
-        },
         modelValue: {
             type: String,
             required: false,

@@ -1,23 +1,13 @@
 <template>
     <div class="card mb-2 px-1">
         <div class="card-left">
-            <!-- if todo -->
-            <span v-if="type == 'todo'" class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
+            <span class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
                 <i class="fa-regular fa-circle-check" :class="element.completed ? 'fa-circle-check' : 'fa-circle'"
                     @click="markAsCompleted(index)"></i>
             </span>
-            <span v-else class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
-                <i class="fa-solid fa-tag"></i>
-            </span>
+
             <div class="card-info" @click="readElement(index, element)">
                 <span class="card-text">{{ element.name }}</span>
-            </div>
-            <!-- if todo -->
-            <div v-if="type == 'todo'">
-                <span class="tag" v-for="(tag, index) in element.tags" :key="tag.id">
-                    <i class="fa-solid fa-tag"></i>
-                    <span>{{ tag.name }}</span>
-                </span>
             </div>
         </div>
         <div class="card-right is-size-5 ml-2">
@@ -41,10 +31,6 @@ export default {
             type: Object,
             required: true,
         },
-        type: {
-            type: String,
-            required: true,
-        }
     },
     methods: {
         markAsCompleted(index) {
