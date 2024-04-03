@@ -3,9 +3,17 @@
     <div class="container">
       <h1 class="title">TodoList PWA</h1>
       <h2 class="subtitle is-3">{{ remaining <= 1 ? remaining + " task" : remaining + ' tasks' }} to do</h2>
-          <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
+          <!-- <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
           <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index, todo)"
             @delete="deleteItem(index)" @mark="markAsCompleted(index)" />
+    -->
+          <input type="text" v-model="newItem">
+          <button class="button" @click="addItem">submit</button>
+          <div v-for="(item, index) in todos" :key="index">
+            {{ index }} - {{ item.name }}
+            <button class="button" @click="editItem(index, item)">edit</button>
+            <button class="button" @click="deleteItem(index)">delete</button>
+          </div>
     </div>
   </section>
 
@@ -15,7 +23,7 @@
     <div class="modal-card">
       <section class="modal-card-body">
         {{ selectedItem }}
-        <!-- <Field name="Name" v-model="selectedItem.name"/> -->
+        <Field name="Name" v-model="selectedItem.name" />
         <!-- <Field name="Date" v-model="selectedTodo.date" disabled readonly/>
         <Field name="Description" type="text" v-model="selectedTodo.description"/> -->
 
@@ -52,10 +60,7 @@
       </section>
       <footer class="modal-card-foot">
         <div class="buttons">
-          <!-- <button id="bt_SaveChanges" class="button is-success" @click="saveChanges(selectedTodo.index, selectedTodo)">
-            Save changes
-          </button> -->
-          <button id="bt_CloseModal" class="button" @click="closeModal">Close</button>
+          <button id="bt_CloseModal" class="button" @click="closeModal(selectedItem.index, selectedItem)">Close</button>
         </div>
       </footer>
     </div>
@@ -76,6 +81,7 @@ export default {
   data() {
     return {
       newItem: "",
+
       selectedItem: {},
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
@@ -90,37 +96,30 @@ export default {
       if (this.newItem == "") {
         return;
       }
+      for (let i = 0; i < this.todos.length; i++) {
+        if (this.todos[i].name == this.newItem) {
+          this.clearInputValue()
+          return;
+        }
+      }
       let todo = {
         name: this.newItem,
         date: this.getDate(),
         description: "",
         completed: false,
-        tags: [],
       }
       this.todos.push(todo)
-
       this.saveItem()
       this.clearInputValue()
+    },
+    editItem(index, item) {
+      this.selectedItem = { ...item };
+      this.selectedItem.index = index;
+      document.getElementById('modal').classList.add('is-active')
     },
     updateItem(index, item) {
       this.todos[index] = { ...item };
       this.todos[index].date = this.getDate()
-      this.saveItem();
-    },
-    deleteItem(index) {
-      if (!this.tabIsTag) {
-        this.todos.splice(index, 1);
-      }
-      else {
-        for (let i = 0; i < this.todos.length; i++) {
-          for (let j = 0; j < this.todos[i].tags.length; j++) {
-            if (this.tags[index].name == this.todos[i].tags[j].name) {
-              this.todos[i].tags.splice(j, 1)
-            }
-          }
-        }
-        this.tags.splice(index, 1);
-      }
       this.saveItem();
     },
     saveItem() {
@@ -129,6 +128,10 @@ export default {
     markAsCompleted(index) {
       this.todos[index].completed = !this.todos[index].completed;
       this.updateItem(index, this.todos[index]);
+      this.saveItem();
+    },
+    deleteItem(index) {
+      this.todos.splice(index, 1)
       this.saveItem();
     },
     handleEnterKey(event) {
@@ -145,16 +148,21 @@ export default {
       let date = currentTime + " - " + currentDay;
       return date;
     },
-    openModal(index, item) {
-      this.selectedItem = { ...item };
-      this.selectedItem.index = index;
-      document.getElementById('modal').classList.add('is-active')
-    },
-    closeModal() {
+    closeModal(index, item) {
+      this.updateItem(index, item)
       document.getElementById('modal').classList.remove('is-active')
     },
   }
 }
+//   for (let i = 0; i < this.todos.length; i++) {
+//     for (let j = 0; j < this.todos[i].tags.length; j++) {
+//       if (this.tags[index].name == this.todos[i].tags[j].name) {
+//         this.todos[i].tags.splice(j, 1)
+//       }
+//     }
+//   }
+//   this.tags.splice(index, 1);
+// }
 </script>
 
 <style>
