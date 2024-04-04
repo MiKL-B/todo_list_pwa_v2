@@ -1,0 +1,120 @@
+fonctionnalités:
+-----------------------
+- Lists
+create, read, update, delete
+structure:
+lists:[
+    {
+        name:"",
+        todos:[],
+    }
+]
+
+L'utilisateur ne peut pas créer ou modifier une liste avec un nom vide ou déjà existant.
+
+Il peut consulter la liste qu'il souhaite.
+Il peut également y ajouter une ou plusieurs tâches. 
+
+Si l'utilisateur supprime une liste et qu'il confirme son choix:
+Dans les deux cas, un message sera affiché avec la possibilité de confirmer ou d'annuler son choix.
+
+- la liste comporte au moins une tâche
+message:
+Etes vous sur de vouloir supprimer cette liste ?
+Les tâches associées à cette liste seront supprimées également.
+
+- la liste ne comporte aucune tâche
+message: Etes vous sur de vouloir supprimer cette liste ?
+
+-----------------------
+- Todo
+create, read, update, delete
+structure:
+todo:{
+    name:"",
+    date:"",
+    description:"",
+    priority:-1,
+    completed:false,
+    tags:[]
+}
+mark as completed
+mark all as completed
+clear completed
+filter all, uncompleted, completed
+-----------------------
+- tag
+create, read, update, delete
+structure:
+tag:{
+    name:"",
+    color:"",
+}
+-----------------------
+- priority
+structure
+priorities:[
+    {
+        index:1,
+        name:"Very high",
+    },
+    {
+        index:2,
+        name:"High",
+    },
+    {
+        index:3,
+        name:"Low",
+    },
+    {
+        index:4,
+        name:"Very low",
+    }
+]
+
+
+
+
+ex:
+l'utilisateur crée une liste: Courses
+et ajoute comme "tâches" du pain, des bananes, des pommes et du cabillaud
+et il catégorise ses tâches avec des tags appropriés: pâtisserie, fruits, poissons
+lists:[
+    {
+        name:"Courses",
+        todos:[
+                {
+                    name:"Pain",
+                    date:"04/04/2024",
+                    description:"",
+                    priority:-1,
+                    completed:false,
+                    tags:["pâtisserie"] 
+                },
+                {
+                    name:"Bananes",
+                    date:"04/04/2024",
+                    description:"",
+                    priority:-1,
+                    completed:false,
+                    tags:["fruits"]
+                },
+                {
+                    name:"Pommes",
+                    date:"04/04/2024",
+                    description:"",
+                    priority:-1,
+                    completed:false,
+                    tags:["fruits"]
+                },
+                {
+                    name:"Cabillaud",
+                    date:"04/04/2024",
+                    description:"",
+                    priority:-1,
+                    completed:false,
+                    tags:["poissons"]
+                }
+        ]
+    }
+]
