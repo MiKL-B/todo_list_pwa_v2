@@ -2,7 +2,7 @@
     <div class="modal">
         <div class="content">
             <slot name="content"></slot>
-            <button @click="close">close</button>
+            <button class="button" @click="close">close</button>
         </div>
     </div>
 </template>

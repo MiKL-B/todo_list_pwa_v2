@@ -1,78 +1,45 @@
 <template>
-
   <section class="section px-4">
     <div class="container">
       <h1 class="title">TodoList PWA</h1>
       <h2 class="subtitle is-3">{{ remaining <= 1 ? remaining + " task" : remaining + ' tasks' }} to do</h2>
-          <!-- <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
-          <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="openModal(index, todo)"
-            @delete="deleteItem(index)" @mark="markAsCompleted(index)" />
-    -->
-          <input type="text" v-model="newItem">
-          <button class="button" @click="addItem">submit</button>
-          <div v-for="(item, index) in todos" :key="index">
-            {{ index }} - {{ item.name }}
-            <button class="button" @click="editItem(index, item)">edit</button>
-            <button class="button" @click="deleteItem(index)">delete</button>
+
+          <div class="tabs">
+            <ul>
+              <li :class="{ 'is-active': activeTab === 'Tasks' }" @click="changeTab('Tasks')"><a>Tasks</a></li>
+              <li :class="{ 'is-active': activeTab === 'Tags' }" @click="changeTab('Tags')"><a>Tags</a></li>
+            </ul>
           </div>
-          <button class="button-primary">Button element</button>
+
+          <div v-if="activeTab === 'Tasks'">
+            <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
+            <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="editItem(index, todo)"
+              @delete="deleteItem(index)" @mark="markAsCompleted(index)" @read="readItem(index, todo)" />
+          </div>
+
     </div>
   </section>
+
   <Modal v-if="visibleModal" @close="toggleModal">
-  <template v-slot:content>
-    {{ selectedItem }}
-  </template>
-  </Modal>
-  <button class="border-2">test</button>
-
-  <!-- modal -->
-  <div id="modal" class=" px-4">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-      <section class="modal-card-body">
-        {{ selectedItem }}
+    <template v-slot:content>
+      <div v-if="readonly">
+        <p>{{ selectedItem.name }}</p>
+        <p>{{ selectedItem.date }}</p>
+        <p>{{ selectedItem.description }}</p>
+      </div>
+      <div v-else>
         <Field name="Name" v-model="selectedItem.name" />
-        <!-- <Field name="Date" v-model="selectedTodo.date" disabled readonly/>
-        <Field name="Description" type="text" v-model="selectedTodo.description"/> -->
-
-        <!-- <label class="label">Tags</label>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <div class="select is-fullwidth">
-              <select v-model="selectedTag">
-                <option disabled selected>Select a tag</option>
-                <option v-for="(tag, index) in tags" :key="index" :value="tag">{{ tag.name }}</option>
-              </select>
-
-            </div>
-          </div>
-          <div class="control">
-            <button class="button is-success" @click="addTagTodo">Assign</button>
-          </div>
-        </div>
-    
-        <div class="field">
-          <div class="control tags-todolist">
-            <span class="tag" v-for="(tag, index) in selectedTodo.tags" :key="tag.id">
-              <i class="fa-solid fa-tag"></i>
-              <span>{{ tag.name }}</span>
-              <a class="tag is-delete" @click="deleteTagTodo(index)"></a>
-            </span>
-          </div>
-        </div>
-
+        <Field name="Description" type="text" v-model="selectedItem.description" />
         <label class="checkbox">
-          <input id="todo-completed" type="checkbox" v-model="selectedTodo.completed" />
+          <input id="todo-completed" type="checkbox" v-model="selectedItem.completed" />
           Completed
-        </label> -->
-      </section>
-      <!-- <footer class="modal-card-foot">
-        <div class="buttons">
-          <button id="bt_CloseModal" class="button" @click="closeModal(selectedItem.index, selectedItem)">Close</button>
-        </div>
-      </footer> -->
-    </div>
-  </div>
+        </label>
+        <button class="button is-success" :disabled="selectedItem.name === ''"
+          @click="saveItem(selectedItem.index, selectedItem)">Save</button>
+      </div>
+    </template>
+  </Modal>
+
 </template>
 
 
@@ -85,13 +52,16 @@ import Modal from '@/components/Modal.vue';
 export default {
   name: "App",
   components: {
-    InputElement, Card, Field,Modal
+    InputElement, Card, Field, Modal
   },
   data() {
     return {
+      // todo
       newItem: "",
-      visibleModal:false,
       selectedItem: {},
+      readonly: false,
+      activeTab: "Tasks",
+      visibleModal: false,
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
   },
@@ -101,16 +71,14 @@ export default {
     },
   },
   methods: {
-    toggleModal(){
-      this.visibleModal = !this.visibleModal
-    },
+    // todo
     addItem() {
       if (this.newItem == "") {
         return;
       }
       for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].name == this.newItem) {
-          this.clearInputValue()
+        if (this.todos[i].name === this.newItem) {
+          this.newItem = "";
           return;
         }
       }
@@ -120,40 +88,47 @@ export default {
         description: "",
         completed: false,
       }
+      this.newItem = "";
       this.todos.push(todo)
-      this.saveItem()
-      this.clearInputValue()
+      this.saveLocalStorage()
     },
-    editItem(index, item) {
+    displayItem(index,item){
       this.visibleModal = true;
       this.selectedItem = { ...item };
       this.selectedItem.index = index;
-    
     },
-    updateItem(index, item) {
-      this.todos[index] = { ...item };
-      this.todos[index].date = this.getDate()
-      this.saveItem();
+    readItem(index, item) {
+      this.readonly = true;
+      this.displayItem(index,item);
     },
-    saveItem() {
-      localStorage.setItem("todos", JSON.stringify(this.todos));
+    editItem(index, item) {
+      this.readonly = false;
+      this.displayItem(index,item);
     },
     markAsCompleted(index) {
       this.todos[index].completed = !this.todos[index].completed;
-      this.updateItem(index, this.todos[index]);
-      this.saveItem();
+      this.todos[index].date = this.getDate()
+      this.saveLocalStorage();
     },
     deleteItem(index) {
       this.todos.splice(index, 1)
-      this.saveItem();
+      this.saveLocalStorage();
     },
+    saveItem(index, item) {
+      this.visibleModal = false;
+      this.todos[index] = { ...item };
+      this.todos[index].date = this.getDate()
+      this.saveLocalStorage()
+    },
+    saveLocalStorage() {
+      localStorage.setItem("todos", JSON.stringify(this.todos));
+    },
+
+    // miscellaneous
     handleEnterKey(event) {
       if (event.key == 'Enter') {
         this.addItem()
       }
-    },
-    clearInputValue() {
-      this.newItem = "";
     },
     getDate() {
       let currentTime = new Date().toLocaleTimeString();
@@ -161,9 +136,11 @@ export default {
       let date = currentTime + " - " + currentDay;
       return date;
     },
-    closeModal(index, item) {
-      this.updateItem(index, item)
-      document.getElementById('modal').classList.remove('is-active')
+    changeTab(tab) {
+      this.activeTab = tab
+    },
+    toggleModal() {
+      this.visibleModal = !this.visibleModal
     },
   }
 }
