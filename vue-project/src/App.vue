@@ -1,4 +1,5 @@
 <template>
+
   <section class="section px-4">
     <div class="container">
       <h1 class="title">TodoList PWA</h1>
@@ -14,11 +15,18 @@
             <button class="button" @click="editItem(index, item)">edit</button>
             <button class="button" @click="deleteItem(index)">delete</button>
           </div>
+          <button class="button-primary">Button element</button>
     </div>
   </section>
+  <Modal v-if="visibleModal" @close="toggleModal">
+  <template v-slot:content>
+    {{ selectedItem }}
+  </template>
+  </Modal>
+  <button class="border-2">test</button>
 
   <!-- modal -->
-  <div id="modal" class="modal px-4">
+  <div id="modal" class=" px-4">
     <div class="modal-background"></div>
     <div class="modal-card">
       <section class="modal-card-body">
@@ -58,11 +66,11 @@
           Completed
         </label> -->
       </section>
-      <footer class="modal-card-foot">
+      <!-- <footer class="modal-card-foot">
         <div class="buttons">
           <button id="bt_CloseModal" class="button" @click="closeModal(selectedItem.index, selectedItem)">Close</button>
         </div>
-      </footer>
+      </footer> -->
     </div>
   </div>
 </template>
@@ -72,16 +80,17 @@
 import InputElement from '@/components/InputElement.vue';
 import Card from '@/components/Card.vue';
 import Field from '@/components/Field.vue';
+import Modal from '@/components/Modal.vue';
 
 export default {
   name: "App",
   components: {
-    InputElement, Card, Field
+    InputElement, Card, Field,Modal
   },
   data() {
     return {
       newItem: "",
-
+      visibleModal:false,
       selectedItem: {},
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
@@ -92,6 +101,9 @@ export default {
     },
   },
   methods: {
+    toggleModal(){
+      this.visibleModal = !this.visibleModal
+    },
     addItem() {
       if (this.newItem == "") {
         return;
@@ -113,9 +125,10 @@ export default {
       this.clearInputValue()
     },
     editItem(index, item) {
+      this.visibleModal = true;
       this.selectedItem = { ...item };
       this.selectedItem.index = index;
-      document.getElementById('modal').classList.add('is-active')
+    
     },
     updateItem(index, item) {
       this.todos[index] = { ...item };
@@ -172,9 +185,9 @@ body {
   height: 100vh;
 }
 
-.section {
+/* .section {
   padding: 1rem 1rem 0 1rem;
-}
+} */
 
 i {
   cursor: pointer;
