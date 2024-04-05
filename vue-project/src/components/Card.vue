@@ -1,7 +1,7 @@
 <template>
     <div class="card mb-2 p-2">
         <div class="card-left">
-            <span class="icon mx-1" :class="element.completed ? 'has-text-success' : ''">
+            <span class="icon mx-1 is-size-5" :class="element.completed ? 'has-text-success' : ''">
                 <i class="fa-regular fa-circle-check" :class="element.completed ? 'fa-circle-check' : 'fa-circle'"
                     @click="markAsCompleted(index)"></i>
             </span>

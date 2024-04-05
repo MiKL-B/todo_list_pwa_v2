@@ -4,11 +4,11 @@
         <div class="control">
             <div v-if="type == 'text'">
                 <textarea id="todo-description" class="textarea has-fixed-size" :value="modelValue" @input="onInput"
-              placeholder="Fixed size textarea"></textarea>
+              placeholder="Fixed size textarea" :disabled="disabled" ></textarea>
             </div>
             <div v-else>
                 <input :value="modelValue" @input="onInput" class="input" type="text" :placeholder="'Enter ' + name"
-                :disabled="disabled" :readonly="readonly"/>
+                :disabled="disabled" />
             </div>
         </div>
     </div>
@@ -28,11 +28,6 @@ export default {
             required: false,
         },
         disabled:{
-            type:Boolean,
-            required:false,
-            default:false,
-        },
-        readonly:{
             type:Boolean,
             required:false,
             default:false,

@@ -1,8 +1,14 @@
 <template>
-    <div class="modal">
-        <div class="content">
-            <slot name="content"></slot>
-            <button class="button" @click="close">close</button>
+    <div class="modal ">
+        <div class="card">
+            <div class="card-content">
+                <div class="modal-header">
+                    <span class="icon">
+                        <i class="fa-regular fa-circle-xmark is-size-4" @click="close"></i>
+                    </span>
+                </div>
+                <slot name="content"></slot>
+            </div>
         </div>
     </div>
 </template>
@@ -30,7 +36,10 @@ export default {
     align-items: center;
     z-index: 9999;
 }
-.content{
-    background:white;
+
+.modal-header {
+    display: flex;
+    justify-content: flex-end;
 }
+
 </style>
