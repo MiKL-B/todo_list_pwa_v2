@@ -3,10 +3,14 @@
         <div class="card-left">
             <span class="icon mx-1 is-size-5" :class="element.completed ? 'has-text-success' : ''">
                 <i class="fa-regular fa-circle-check" :class="element.completed ? 'fa-circle-check' : 'fa-circle'"
-                    @click="markAsCompleted(element.index)"></i>
+                    @click="markAsCompleted(element)"></i>
             </span>
 
             <div class="card-info ml-2">
+                <span class="priority" v-if="element.priority == 1">
+                    <i class="fa-solid fa-exclamation has-text-danger"></i> 
+                    <i class="fa-solid fa-exclamation has-text-danger"></i>
+                </span>
                 <span class="card-text">{{ element.name }}</span>
             </div>
         </div>
@@ -35,9 +39,10 @@ export default {
             required: true,
         },
     },
+    emits:['mark','read','edit','delete'],
     methods: {
-        markAsCompleted(index) {
-            this.$emit('mark', index)
+        markAsCompleted(todo) {
+            this.$emit('mark',todo)
         },
         readElement(index, element) {
             this.$emit('read', [index, element])
@@ -68,6 +73,8 @@ export default {
 .card-info {
     width: 170px;
     padding: 1rem 0;
+    display:flex;
+    gap:5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -75,5 +82,10 @@ export default {
 
 .card-text {
     max-width: 100px;
+}
+.priority{
+    display:flex;
+    gap:2px;
+    align-items: center;
 }
 </style>

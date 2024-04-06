@@ -1,90 +1,19 @@
 <template>
 
-  <nav>
-    <i class="fa-solid fa-bars is-size-4 p-4 burger" @click="toggleNavBar"></i>
-    <div v-if="visibleNavBar" class="navbar">
-      <aside class="menu pt-6 px-4">
-        <p class="menu-label">
-          <span class="icon">
-            <i class="fa-solid fa-list"></i>
-          </span>
-          <span>Todos</span>
-        </p>
-        <ul class="menu-list">
-          <li @click="setFilter('All')">
-            <a>
-              <span class="icon">
-                <i class="fa-regular fa-file"></i>
-              </span>
-              <span>All</span>
-            </a>
-          </li>
-          <li @click="setFilter('Today')">
-            <a>
-              <span class="icon">
-                <i class="fa-regular fa-file"></i>
-              </span>
-              <span>Today</span>
-            </a>
-          </li>
-          <!-- <li>
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-              </span>
-              <span>Important</span>
-            </a>
-          </li> -->
-          <li @click="setFilter('Completed')">
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-circle-check"></i>
-              </span>
-              <span>Completed</span>
-            </a>
-          </li>
-          <li @click="markAllAsCompleted">
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-circle-check"></i>
-              </span>
-              <span>Mark all as completed</span>
-            </a>
-          </li>
-          <li @click="deleteAllItems">
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-broom"></i>
-              </span>
-              <span>Clear Completed</span>
-            </a>
-          </li>
-        </ul>
-        <p class="menu-label">
-          <span class="icon">
-            <i class="fa-solid fa-tags"></i>
-          </span>
-          <span>Tags</span>
-        </p>
-        <ul class="menu-list">
-          <li @click="changeTab('Tags')">
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-tag"></i>
-              </span>
-              <span>Tag</span>
-            </a>
-          </li>
-        </ul>
-      </aside>
-    </div>
-  </nav>
+  <div class="nav">
+    <Navbar @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted" @uncompleted="markAllAsUncompleted"
+      @delete="deleteAllItems" @export="exportJSON" @import="openFileInput" />
+    <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
+    <h2 class="title">TodoList</h2>
 
+  </div>
   <div class="container px-4">
     <div v-if="activeTab === 'Tasks'">
       <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
-      <label class="label">Task(s) to do: {{ remaining }}</label>
-      <label class="label">Current filter: {{ currentFilter }}</label>
+      <div class="filters">
+        <label class="label">Task(s) to do: {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : '' }}</label>
+        <label class="label">Filter: {{ currentFilter }}</label>
+      </div>
       <Card type="todo" v-for="todo in filteredTodos" :key="todo.index" :element="todo"
         @edit="editItem(todo.index, todo)" @delete="deleteItem(todo.index)" @mark="markAsCompleted(todo)"
         @read="readItem(todo.index, todo)" />
@@ -96,18 +25,27 @@
 
   <Modal v-if="visibleModal" @close="toggleModal">
     <template v-slot:content>
-      <!-- name -->
       <Field name="Name" v-model="selectedItem.name" :disabled="readonly" />
-      <!-- description -->
-      <Field name="Description" type="text" v-model="selectedItem.description" :disabled="readonly" />
-      <!-- created date -->
-      <Field v-if="readonly" name="Created date" v-model="selectedItem.createdDate" :disabled="readonly" />
-      <!-- updated date -->
-      <Field v-if="readonly" name="Updated date" v-model="selectedItem.updatedDate" :disabled="readonly" />
-     <!-- updated date -->
-     <!-- <Field v-if="readonly" name="Priority" v-model="selectedItem.priority" :disabled="readonly" />
-       -->
-      <!-- tags -->
+      <Field name="Description" type="textarea" v-model="selectedItem.description" :disabled="readonly" />
+      <Field name="Created date" v-if="readonly" v-model="selectedItem.createdDate" :disabled="readonly" />
+      <Field name="Updated date" v-if="readonly" v-model="selectedItem.updatedDate" :disabled="readonly" />
+      <div class="field">
+        <label class="checkbox">
+          <input type="checkbox" v-model="selectedItem.completed" :disabled="readonly" />
+          Completed
+        </label>
+      </div>
+      <div class="field">
+        <label class="checkbox">
+          <input type="checkbox" v-model="selectedItem.priority" :disabled="readonly"
+            @click="markAsImportant(selectedItem)" />
+          Important
+        </label>
+      </div>
+      <div class="cta" v-if="readonly == false">
+        <button id="bt_save" class="button is-success" :disabled="selectedItem.name == ''"
+          @click="saveItem(selectedItem.index, selectedItem)">Save</button>
+      </div>
       <!-- <label class="label">Tags</label>
       <div class="field has-addons">
         <div class="control is-expanded">
@@ -125,45 +63,20 @@
           </button>
         </div>
       </div> -->
-      <!-- priority -->
-      <!-- <div class="field">
-        <label class="label">Priority</label>
-        <div class="control is-expanded">
-          <div class="select is-fullwidth">
-            <select disabled>
-              <option selected disabled>Priority</option>
-              <option>High</option>
-              <option>Low</option>
-            </select>
-          </div>
-        </div>
-      </div> -->
-      <!-- completed -->
-      <label class="checkbox">
-        <input id="todo-completed" type="checkbox" v-model="selectedItem.completed" :disabled="readonly" />
-        Completed
-      </label>
-      <div class="cta" v-if="readonly == false">
-        <button class="button is-success" :disabled="selectedItem.name === ''"
-          @click="saveItem(selectedItem.index, selectedItem)">Save</button>
-      </div>
     </template>
   </Modal>
-
-
 </template>
-
 
 <script>
 import InputElement from '@/components/InputElement.vue';
 import Card from '@/components/Card.vue';
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
-
+import Navbar from '@/components/Navbar.vue';
 export default {
   name: "App",
   components: {
-    InputElement, Card, Field, Modal
+    InputElement, Card, Field, Modal, Navbar
   },
   data() {
     return {
@@ -172,21 +85,16 @@ export default {
       readonly: false,
       activeTab: "Tasks",
       visibleModal: false,
-      visibleNavBar: false,
       currentFilter: "All",
       priorities: [
         {
           index: 0,
-          name: "Normal"
+          name: "Low"
         },
         {
           index: 1,
-          name: "Low",
-        },
-        {
-          index: 2,
           name: "High",
-        }
+        },
       ],
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
@@ -195,23 +103,39 @@ export default {
     remaining() {
       return this.todos.filter((todo) => !todo.completed).length;
     },
+
     filteredTodos() {
       switch (this.currentFilter) {
         case 'All':
           return this.todos;
         case 'Today':
           let currentDay = new Date().toLocaleDateString();
-          return this.todos.filter((todo) => todo.createdDate.includes(currentDay))
+          return this.todos.filter((todo) => todo.createdDate.includes(currentDay));
         case 'Completed':
-          return this.todos.filter((todo) => todo.completed)
+          return this.todos.filter((todo) => todo.completed);
+        case 'Uncompleted':
+          return this.todos.filter((todo) => !todo.completed);
+        case 'Important':
+          return this.todos.filter((todo) => todo.priority == 1);
       }
     }
   },
   methods: {
+    invalidName(name) {
+      let isInvalid = false;
+      if (name == '') {
+        isInvalid = true;
+      }
+      for (let i = 0; i < this.todos.length; i++) {
+        if (this.todos[i].name === name) {
+          isInvalid = true;
+        }
+      }
+      return isInvalid
+    },
     setFilter(type) {
       this.currentFilter = type;
       this.changeTab('Tasks')
-      this.visibleNavBar = false;
     },
     uuid() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -222,15 +146,8 @@ export default {
     },
     // todo
     addItem() {
-      if (this.newItem == "") {
-        return;
-      }
-      for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].name === this.newItem) {
-          this.newItem = "";
-          return;
-        }
-      }
+      if (this.invalidName(this.newItem)) return;
+
       let todo = {
         index: this.uuid(),
         name: this.newItem,
@@ -263,12 +180,23 @@ export default {
       todo.updatedDate = this.getDate()
       this.saveLocalStorage();
     },
+    markAllAsUncompleted() {
+      for (let i = 0; i < this.todos.length; i++) {
+        this.todos[i].completed = false;
+        this.todos[i].updatedDate = this.getDate();
+      }
+      this.saveLocalStorage()
+    },
     markAllAsCompleted() {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = true;
         this.todos[i].updatedDate = this.getDate();
       }
-      this.visibleNavBar = false;
+      this.saveLocalStorage()
+    },
+    markAsImportant(todo) {
+      todo.priority = !todo.priority;
+      todo.updatedDate = this.getDate();
       this.saveLocalStorage()
     },
     deleteItem(index) {
@@ -284,13 +212,17 @@ export default {
           ++i;
         }
       }
-      this.visibleNavBar = false;
       this.saveLocalStorage();
     },
     saveItem(index, item) {
+
+      for (let i = 0; i < this.todos.length; i++) {
+        if (this.todos[i].index === index) {
+          this.todos[i] = { ...item };
+          this.todos[i].updatedDate = this.getDate()
+        }
+      }
       this.visibleModal = false;
-      this.todos[index] = { ...item };
-      this.todos[index].updatedDate = this.getDate()
       this.saveLocalStorage()
     },
     saveLocalStorage() {
@@ -311,14 +243,44 @@ export default {
     },
     changeTab(tab) {
       this.activeTab = tab;
-      this.visibleNavBar = false;
     },
     toggleModal() {
       this.visibleModal = !this.visibleModal
     },
-    // navbar
-    toggleNavBar() {
-      this.visibleNavBar = !this.visibleNavBar
+    exportJSON() {
+      const jsonData = this.todos // Vos données JSON à exporter
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
+      const downloadLink = document.createElement("a");
+      downloadLink.setAttribute("href", dataStr);
+      downloadLink.setAttribute("download", "Todos.json");
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    },
+    openFileInput() {
+      this.$refs.fileInput.click();
+    },
+    importJSON() {
+
+      const file = event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonData = JSON.parse(e.target.result);
+          // Faites quelque chose avec les données JSON importées, par exemple :
+          this.todos = jsonData
+          this.saveLocalStorage()
+          console.log(jsonData);
+        } catch (error) {
+          console.error("Erreur lors de la lecture du fichier JSON : " + error);
+        }
+      };
+      reader.readAsText(file);
     }
   }
 }
@@ -338,6 +300,12 @@ export default {
 
 body {
   height: 100vh;
+}
+
+body,
+input,
+button {
+  font-family: 'Space Grotesk';
 }
 
 
@@ -369,6 +337,11 @@ i {
 
 }
 
+.nav {
+  display: flex;
+  align-items: center;
+}
+
 .navbar {
   position: absolute;
   left: 0;
@@ -376,5 +349,10 @@ i {
   top: 0;
   right: 0;
   z-index: 1;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
