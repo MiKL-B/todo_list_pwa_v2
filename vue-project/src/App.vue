@@ -86,16 +86,6 @@ export default {
       activeTab: "Tasks",
       visibleModal: false,
       currentFilter: "All",
-      priorities: [
-        {
-          index: 0,
-          name: "Low"
-        },
-        {
-          index: 1,
-          name: "High",
-        },
-      ],
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
   },
@@ -116,7 +106,7 @@ export default {
         case 'Uncompleted':
           return this.todos.filter((todo) => !todo.completed);
         case 'Important':
-          return this.todos.filter((todo) => todo.priority == 1);
+          return this.todos.filter((todo) => todo.priority == true);
       }
     }
   },
@@ -155,7 +145,7 @@ export default {
         updatedDate: this.getDate(),
         description: "",
         completed: false,
-        priority: this.priorities[0].index,
+        priority: false,
         // tags:[],
       }
       this.newItem = "";
