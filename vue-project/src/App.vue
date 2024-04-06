@@ -9,10 +9,17 @@
             <i class="fa-solid fa-list"></i>
           </span>
           <span>Todos</span>
-
         </p>
         <ul class="menu-list">
-          <li>
+          <li @click="setFilter('All')">
+            <a>
+              <span class="icon">
+                <i class="fa-regular fa-file"></i>
+              </span>
+              <span>All</span>
+            </a>
+          </li>
+          <li @click="setFilter('Today')">
             <a>
               <span class="icon">
                 <i class="fa-regular fa-file"></i>
@@ -20,63 +27,31 @@
               <span>Today</span>
             </a>
           </li>
-          <li>
+          <!-- <li>
             <a>
               <span class="icon">
                 <i class="fa-solid fa-triangle-exclamation"></i>
               </span>
               <span>Important</span>
             </a>
-          </li>
-          <li>
-            <a>
-              <span class="icon">
-                <i class="fa-regular fa-trash-can"></i>
-              </span>
-              <span>Trash</span>
-            </a>
-          </li>
-        </ul>
-        <p class="menu-label">
-          <span class="icon">
-            <i class="fa-solid fa-tags"></i>
-          </span>
-          <span>Tags</span>
-
-        </p>
-        <ul class="menu-list">
-          <li>
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-tag"></i>
-              </span>
-              <span>Tag</span>
-            </a>
-          </li>
-        </ul>
-        <p class="menu-label">Actions</p>
-        <ul class="menu-list">
-          <li>
-            <a>
-              <span class="icon">
-                <i class="fa-solid fa-filter"></i>
-              </span>
-              <span>Filter</span>
-            </a>
-            <ul>
-              <li><a>Date</a></li>
-              <li><a>Completed</a></li>
-            </ul>
-          </li>
-          <li>
+          </li> -->
+          <li @click="setFilter('Completed')">
             <a>
               <span class="icon">
                 <i class="fa-solid fa-circle-check"></i>
               </span>
-              <span>Mark all as Completed</span>
+              <span>Completed</span>
             </a>
           </li>
-          <li>
+          <li @click="markAllAsCompleted">
+            <a>
+              <span class="icon">
+                <i class="fa-solid fa-circle-check"></i>
+              </span>
+              <span>Mark all as completed</span>
+            </a>
+          </li>
+          <li @click="deleteAllItems">
             <a>
               <span class="icon">
                 <i class="fa-solid fa-broom"></i>
@@ -85,25 +60,37 @@
             </a>
           </li>
         </ul>
-
+        <p class="menu-label">
+          <span class="icon">
+            <i class="fa-solid fa-tags"></i>
+          </span>
+          <span>Tags</span>
+        </p>
+        <ul class="menu-list">
+          <li @click="changeTab('Tags')">
+            <a>
+              <span class="icon">
+                <i class="fa-solid fa-tag"></i>
+              </span>
+              <span>Tag</span>
+            </a>
+          </li>
+        </ul>
       </aside>
     </div>
   </nav>
 
   <div class="container px-4">
-
-    <!-- <div class="tabs is-centered">
-      <ul>
-        <li :class="{ 'is-active': activeTab === 'Tasks' }" @click="changeTab('Tasks')"><a>Tasks</a></li>
-        <li :class="{ 'is-active': activeTab === 'Tags' }" @click="changeTab('Tags')"><a>Tags</a></li>
-      </ul>
-    </div> -->
-
     <div v-if="activeTab === 'Tasks'">
       <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
-      <span class="">{{ remaining <= 1 ? remaining + " task" : remaining + ' tasks' }} to do</span>
-          <Card type="todo" v-for="(todo, index) in todos" :key="index" :element="todo" @edit="editItem(index, todo)"
-            @delete="deleteItem(index)" @mark="markAsCompleted(index)" @read="readItem(index, todo)" />
+      <label class="label">Task(s) to do: {{ remaining }}</label>
+      <label class="label">Current filter: {{ currentFilter }}</label>
+      <Card type="todo" v-for="todo in filteredTodos" :key="todo.index" :element="todo"
+        @edit="editItem(todo.index, todo)" @delete="deleteItem(todo.index)" @mark="markAsCompleted(todo)"
+        @read="readItem(todo.index, todo)" />
+    </div>
+    <div v-else>
+      <p>This section is under development</p>
     </div>
   </div>
 
@@ -113,10 +100,15 @@
       <Field name="Name" v-model="selectedItem.name" :disabled="readonly" />
       <!-- description -->
       <Field name="Description" type="text" v-model="selectedItem.description" :disabled="readonly" />
-      <!-- date -->
-      <Field v-if="readonly" name="Date" v-model="selectedItem.date" :disabled="readonly" />
+      <!-- created date -->
+      <Field v-if="readonly" name="Created date" v-model="selectedItem.createdDate" :disabled="readonly" />
+      <!-- updated date -->
+      <Field v-if="readonly" name="Updated date" v-model="selectedItem.updatedDate" :disabled="readonly" />
+     <!-- updated date -->
+     <!-- <Field v-if="readonly" name="Priority" v-model="selectedItem.priority" :disabled="readonly" />
+       -->
       <!-- tags -->
-      <label class="label">Tags</label>
+      <!-- <label class="label">Tags</label>
       <div class="field has-addons">
         <div class="control is-expanded">
           <div class="select is-fullwidth">
@@ -132,9 +124,9 @@
             Add
           </button>
         </div>
-      </div>
+      </div> -->
       <!-- priority -->
-      <div class="field">
+      <!-- <div class="field">
         <label class="label">Priority</label>
         <div class="control is-expanded">
           <div class="select is-fullwidth">
@@ -145,7 +137,7 @@
             </select>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- completed -->
       <label class="checkbox">
         <input id="todo-completed" type="checkbox" v-model="selectedItem.completed" :disabled="readonly" />
@@ -175,13 +167,27 @@ export default {
   },
   data() {
     return {
-      // todo
       newItem: "",
       selectedItem: {},
       readonly: false,
       activeTab: "Tasks",
       visibleModal: false,
       visibleNavBar: false,
+      currentFilter: "All",
+      priorities: [
+        {
+          index: 0,
+          name: "Normal"
+        },
+        {
+          index: 1,
+          name: "Low",
+        },
+        {
+          index: 2,
+          name: "High",
+        }
+      ],
       todos: JSON.parse(localStorage.getItem("todos")) || [],
     }
   },
@@ -189,8 +195,31 @@ export default {
     remaining() {
       return this.todos.filter((todo) => !todo.completed).length;
     },
+    filteredTodos() {
+      switch (this.currentFilter) {
+        case 'All':
+          return this.todos;
+        case 'Today':
+          let currentDay = new Date().toLocaleDateString();
+          return this.todos.filter((todo) => todo.createdDate.includes(currentDay))
+        case 'Completed':
+          return this.todos.filter((todo) => todo.completed)
+      }
+    }
   },
   methods: {
+    setFilter(type) {
+      this.currentFilter = type;
+      this.changeTab('Tasks')
+      this.visibleNavBar = false;
+    },
+    uuid() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    },
     // todo
     addItem() {
       if (this.newItem == "") {
@@ -203,13 +232,14 @@ export default {
         }
       }
       let todo = {
+        index: this.uuid(),
         name: this.newItem,
-        date: this.getDate(),
+        createdDate: this.getDate(),
+        updatedDate: this.getDate(),
         description: "",
         completed: false,
+        priority: this.priorities[0].index,
         // tags:[],
-        // priority:-1,
-        // updatedDate:""
       }
       this.newItem = "";
       this.todos.push(todo)
@@ -228,19 +258,39 @@ export default {
       this.readonly = false;
       this.displayItem(index, item);
     },
-    markAsCompleted(index) {
-      this.todos[index].completed = !this.todos[index].completed;
-      this.todos[index].date = this.getDate()
+    markAsCompleted(todo) {
+      todo.completed = !todo.completed
+      todo.updatedDate = this.getDate()
       this.saveLocalStorage();
+    },
+    markAllAsCompleted() {
+      for (let i = 0; i < this.todos.length; i++) {
+        this.todos[i].completed = true;
+        this.todos[i].updatedDate = this.getDate();
+      }
+      this.visibleNavBar = false;
+      this.saveLocalStorage()
     },
     deleteItem(index) {
       this.todos.splice(index, 1)
       this.saveLocalStorage();
     },
+    deleteAllItems() {
+      var i = 0;
+      while (i < this.todos.length) {
+        if (this.todos[i].completed === true) {
+          this.todos.splice(i, 1);
+        } else {
+          ++i;
+        }
+      }
+      this.visibleNavBar = false;
+      this.saveLocalStorage();
+    },
     saveItem(index, item) {
       this.visibleModal = false;
       this.todos[index] = { ...item };
-      this.todos[index].date = this.getDate()
+      this.todos[index].updatedDate = this.getDate()
       this.saveLocalStorage()
     },
     saveLocalStorage() {
@@ -260,7 +310,8 @@ export default {
       return date;
     },
     changeTab(tab) {
-      this.activeTab = tab
+      this.activeTab = tab;
+      this.visibleNavBar = false;
     },
     toggleModal() {
       this.visibleModal = !this.visibleModal
@@ -319,7 +370,6 @@ i {
 }
 
 .navbar {
-  border: 1px solid red;
   position: absolute;
   left: 0;
   bottom: 0;

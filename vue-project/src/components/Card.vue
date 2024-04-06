@@ -3,7 +3,7 @@
         <div class="card-left">
             <span class="icon mx-1 is-size-5" :class="element.completed ? 'has-text-success' : ''">
                 <i class="fa-regular fa-circle-check" :class="element.completed ? 'fa-circle-check' : 'fa-circle'"
-                    @click="markAsCompleted(index)"></i>
+                    @click="markAsCompleted(element.index)"></i>
             </span>
 
             <div class="card-info ml-2">
@@ -12,13 +12,13 @@
         </div>
         <div class="card-right is-size-5">
             <span class="icon mr-1">
-                <i class="fa-solid fa-info" @click="readElement(index,element)"></i>
+                <i class="fa-solid fa-info" @click="readElement(element.index,element)"></i>
             </span>
             <span class="icon mx-1">
-                <i class="fa-solid fa-pen" @click="editElement(index, element)"></i>
+                <i class="fa-solid fa-pen" @click="editElement(element.index, element)"></i>
             </span>
             <span class="icon has-text-danger ml-1">
-                <i class="fa-regular fa-trash-can" @click="deleteElement(index)"></i>
+                <i class="fa-regular fa-trash-can" @click="deleteElement(element.index)"></i>
             </span>
         </div>
     </div>
