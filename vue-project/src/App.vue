@@ -200,7 +200,11 @@ export default {
       this.saveLocalStorage()
     },
     deleteItem(index) {
-      this.todos.splice(index, 1)
+      for (let i = 0; i < this.todos.length; i++) {
+        if (this.todos[i].index === index) {
+          this.todos.splice(i, 1)
+        }
+      }
       this.saveLocalStorage();
     },
     deleteAllItems() {
@@ -215,7 +219,6 @@ export default {
       this.saveLocalStorage();
     },
     saveItem(index, item) {
-
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === index) {
           this.todos[i] = { ...item };
@@ -248,21 +251,24 @@ export default {
       this.visibleModal = !this.visibleModal
     },
     exportJSON() {
-      const jsonData = this.todos // Vos données JSON à exporter
+      if (window.confirm('Are you sure you want to export and download your data ?')) {
+        let filename = prompt('Enter the name of the export file.','todos')
+        const jsonData = this.todos
 
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
-      const downloadLink = document.createElement("a");
-      downloadLink.setAttribute("href", dataStr);
-      downloadLink.setAttribute("download", "Todos.json");
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
+        const downloadLink = document.createElement("a");
+        downloadLink.setAttribute("href", dataStr);
+        downloadLink.setAttribute("download", `${filename}.json`);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+      }
     },
     openFileInput() {
       this.$refs.fileInput.click();
     },
     importJSON() {
-
       const file = event.target.files[0];
       if (!file) {
         return;
