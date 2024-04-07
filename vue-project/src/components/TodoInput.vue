@@ -2,18 +2,18 @@
     <div class="field has-addons">
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
-                placeholder="Add a new task" @keydown="handleEnterKey"
+                placeholder="Add a new todo..." @keydown="handleEnterKeyTodo"
                 :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
-            <button id="button" class="button is-success" @click="addElement">Submit</button>
+            <button id="button" class="button is-success" @click="addTodo">Submit</button>
         </div>
     </div>
 </template>
 
 <script>
 export default {
-    name: "InputElement",
+    name: "TodoInput",
     props: {
         modelValue: {
             type: String,
@@ -21,11 +21,11 @@ export default {
         }
     },
     methods: {
-        addElement() {
-            this.$emit('addElement')
+        addTodo() {
+            this.$emit('add')
         },
 
-        handleEnterKey(event) {
+        handleEnterKeyTodo(event) {
             if (event.key == 'Enter') {
                 this.$emit('handlekey', event)
             }

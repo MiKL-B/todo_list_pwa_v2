@@ -2,91 +2,71 @@
 
   <div class="nav">
     <Navbar @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted" @uncompleted="markAllAsUncompleted"
-      @delete="deleteAllItems" @export="exportJSON" @import="openFileInput" />
+      @delete="deleteAllItems" @export="exportJSON" @import="openFileInput">
+      <!-- <template v-slot:tag>
+         tag list 
+       NavElement set filter ..
+        mark all as completed
+       mark all as uncompleted 
+        delete all items ... 
+         export json
+      </template> -->
+    </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
     <h2 class="title">TodoList</h2>
-
   </div>
+
   <div class="container px-4">
-    <div v-if="activeTab === 'Tasks'">
-      <InputElement type="todo" @addElement="addItem" v-model="newItem" @handlekey="handleEnterKey" />
+    <div v-if="activeTab === 'Todos'">
+      <TodoInput @add="addTodo" v-model="newTodo" @handlekey="handleEnterKeyTodo" />
       <div class="filters">
         <label class="label">Task(s) to do: {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : '' }}</label>
         <label class="label">Filter: {{ currentFilter }}</label>
       </div>
-      <Card type="todo" v-for="todo in filteredTodos" :key="todo.index" :element="todo"
-        @edit="editItem(todo.index, todo)" @delete="deleteItem(todo.index)" @mark="markAsCompleted(todo)"
-        @read="readItem(todo.index, todo)" />
+      <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo.index, todo)"
+        @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo.index, todo)" />
     </div>
     <div v-else>
-      <p>This section is under development</p>
+      <p>This section is under development.</p>
     </div>
   </div>
 
-  <Modal v-if="visibleModal" @close="toggleModal">
-    <template v-slot:content>
-      <Field name="Name" v-model="selectedItem.name" :disabled="readonly" />
-      <Field name="Description" type="textarea" v-model="selectedItem.description" :disabled="readonly" />
-      <Field name="Created date" v-if="readonly" v-model="selectedItem.createdDate" :disabled="readonly" />
-      <Field name="Updated date" v-if="readonly" v-model="selectedItem.updatedDate" :disabled="readonly" />
-      <div class="field">
-        <label class="checkbox">
-          <input type="checkbox" v-model="selectedItem.completed" :disabled="readonly" />
-          Completed
-        </label>
-      </div>
-      <div class="field">
-        <label class="checkbox">
-          <input type="checkbox" v-model="selectedItem.priority" :disabled="readonly"
-            @click="markAsImportant(selectedItem)" />
-          Important
-        </label>
-      </div>
-      <div class="cta" v-if="readonly == false">
-        <button id="bt_save" class="button is-success" :disabled="selectedItem.name == ''"
-          @click="saveItem(selectedItem.index, selectedItem)">Save</button>
-      </div>
-      <!-- <label class="label">Tags</label>
-      <div class="field has-addons">
-        <div class="control is-expanded">
-          <div class="select is-fullwidth">
-            <select disabled>
-              <option selected disabled>Tags</option>
-              <option>Tag 1</option>
-              <option>Tag 2</option>
-            </select>
-          </div>
-        </div>
-        <div class="control" v-if="readonly == false">
-          <button class="button is-success" disabled>
-            Add
-          </button>
-        </div>
-      </div> -->
-    </template>
-  </Modal>
+  <!-- todo modal -->
+  <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
+    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" />
+
+  <!-- tag modal -->
+
 </template>
 
 <script>
-import InputElement from '@/components/InputElement.vue';
-import Card from '@/components/Card.vue';
+import TodoInput from '@/components/TodoInput.vue';
+import TodoItem from '@/components/TodoItem.vue';
+import TodoSelected from '@/components/TodoSelected.vue';
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
+
 export default {
   name: "App",
   components: {
-    InputElement, Card, Field, Modal, Navbar
+    TodoInput, TodoItem, TodoSelected, Field, Modal, Navbar
   },
   data() {
     return {
-      newItem: "",
-      selectedItem: {},
+      // todos
+      newTodo: "",
+      selectedTodo: {},
       readonly: false,
-      activeTab: "Tasks",
-      visibleModal: false,
       currentFilter: "All",
+      activeTab: "Todos",
       todos: JSON.parse(localStorage.getItem("todos")) || [],
+
+      // tags
+      tags: JSON.parse(localStorage.getItem('tags')) || [],
+
+      // miscellaneous
+      visibleModal: false,
     }
   },
   computed: {
@@ -111,59 +91,37 @@ export default {
     }
   },
   methods: {
-    invalidName(name) {
-      let isInvalid = false;
-      if (name == '') {
-        isInvalid = true;
-      }
-      for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].name === name) {
-          isInvalid = true;
-        }
-      }
-      return isInvalid
-    },
-    setFilter(type) {
-      this.currentFilter = type;
-      this.changeTab('Tasks')
-    },
-    uuid() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-          v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    },
-    // todo
-    addItem() {
-      if (this.invalidName(this.newItem)) return;
+
+    // #region TODO
+    addTodo() {
+      if (this.invalidName(this.newTodo)) return;
 
       let todo = {
         index: this.uuid(),
-        name: this.newItem,
+        name: this.newTodo,
         createdDate: this.getDate(),
         updatedDate: this.getDate(),
         description: "",
         completed: false,
         priority: false,
-        // tags:[],
+        tags: [],
       }
-      this.newItem = "";
+      this.newTodo = "";
       this.todos.push(todo)
       this.saveLocalStorage()
     },
-    displayItem(index, item) {
+    displayItem(index, todo) {
       this.visibleModal = true;
-      this.selectedItem = { ...item };
-      this.selectedItem.index = index;
+      this.selectedTodo = { ...todo };
+      this.selectedTodo.index = index;
     },
-    readItem(index, item) {
+    readTodo(index, todo) {
       this.readonly = true;
-      this.displayItem(index, item);
+      this.displayItem(index, todo);
     },
-    editItem(index, item) {
+    editTodo(index, todo) {
       this.readonly = false;
-      this.displayItem(index, item);
+      this.displayItem(index, todo);
     },
     markAsCompleted(todo) {
       todo.completed = !todo.completed
@@ -189,7 +147,7 @@ export default {
       todo.updatedDate = this.getDate();
       this.saveLocalStorage()
     },
-    deleteItem(index) {
+    deleteTodo(index) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === index) {
           this.todos.splice(i, 1)
@@ -208,10 +166,10 @@ export default {
       }
       this.saveLocalStorage();
     },
-    saveItem(index, item) {
+    saveTodo(index, todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === index) {
-          this.todos[i] = { ...item };
+          this.todos[i] = { ...todo };
           this.todos[i].updatedDate = this.getDate()
         }
       }
@@ -221,12 +179,42 @@ export default {
     saveLocalStorage() {
       localStorage.setItem("todos", JSON.stringify(this.todos));
     },
-
-    // miscellaneous
-    handleEnterKey(event) {
+    handleEnterKeyTodo(event) {
       if (event.key == 'Enter') {
-        this.addItem()
+        this.addTodo()
       }
+    },
+    // #endregion
+
+    // #region TAGS
+    saveLocalStorageTag() {
+      localStorage.setItem('tags', JSON.stringify(this.tags));
+    },
+    // #endregion
+
+    // #region MISCELLANEOUS
+    invalidName(name) {
+      let isInvalid = false;
+      if (name == '') {
+        isInvalid = true;
+      }
+      for (let i = 0; i < this.todos.length; i++) {
+        if (this.todos[i].name === name) {
+          isInvalid = true;
+        }
+      }
+      return isInvalid
+    },
+    setFilter(type) {
+      this.currentFilter = type;
+      this.changeTab('Todos')
+    },
+    uuid() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
     },
     getDate() {
       let currentTime = new Date().toLocaleTimeString();
@@ -240,9 +228,12 @@ export default {
     toggleModal() {
       this.visibleModal = !this.visibleModal
     },
+    // #endregion
+
+    // #region EXPORT
     exportJSON() {
       if (window.confirm('Are you sure you want to export and download your data ?')) {
-        let filename = prompt('Enter the name of the export file.','todos')
+        let filename = prompt('Enter the name of the export file.', 'todos')
         const jsonData = this.todos
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
@@ -252,7 +243,6 @@ export default {
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-
       }
     },
     openFileInput() {
@@ -268,16 +258,15 @@ export default {
       reader.onload = (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
-          // Faites quelque chose avec les données JSON importées, par exemple :
           this.todos = jsonData
           this.saveLocalStorage()
-          console.log(jsonData);
         } catch (error) {
           console.error("Erreur lors de la lecture du fichier JSON : " + error);
         }
       };
       reader.readAsText(file);
     }
+    // #endregion
   }
 }
 //   for (let i = 0; i < this.todos.length; i++) {

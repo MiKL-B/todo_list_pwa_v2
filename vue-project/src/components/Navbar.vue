@@ -10,47 +10,11 @@
                     <span>Filters</span>
                 </p>
                 <ul class="menu-list">
-
-                    <li @click="setFilter('All')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-regular fa-file"></i>
-                            </span>
-                            <span>All</span>
-                        </a>
-                    </li>
-                    <li @click="setFilter('Today')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-regular fa-file"></i>
-                            </span>
-                            <span>Today</span>
-                        </a>
-                    </li>
-                    <li @click="setFilter('Important')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                            </span>
-                            <span>Important</span>
-                        </a>
-                    </li>
-                    <li @click="setFilter('Completed')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-check"></i>
-                            </span>
-                            <span>Completed</span>
-                        </a>
-                    </li>
-                    <li @click="setFilter('Uncompleted')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-regular fa-circle"></i>
-                            </span>
-                            <span>Uncompleted</span>
-                        </a>
-                    </li>
+                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter('All')"/>
+                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter('Today')"/>
+                    <NavItem name="Important" class="fa-solid fa-triangle-exclamation" @action="setFilter('Important')"/>
+                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter('Completed')"/>
+                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter('Uncompleted')"/>
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -59,30 +23,9 @@
                     <span>Actions</span>
                 </p>
                 <ul class="menu-list">
-                    <li @click="markAllAsCompleted">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-circle-check"></i>
-                            </span>
-                            <span>Mark all as completed</span>
-                        </a>
-                    </li>
-                    <li @click="markAllAsUncompleted">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-regular fa-circle"></i>
-                            </span>
-                            <span>Mark all as uncompleted</span>
-                        </a>
-                    </li>
-                    <li @click="deleteAllItems">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-broom"></i>
-                            </span>
-                            <span>Clear all completed</span>
-                        </a>
-                    </li>
+                    <NavItem name="Mark all as completed" class="fa-solid fa-circle-check" @action="markAllAsCompleted"/>
+                    <NavItem name="Mark all as uncompleted" class="fa-solid fa-circle" @action="markAllAsUncompleted"/>
+                    <NavItem name="Clear all completed" class="fa-solid fa-broom" @action="deleteAllTodos"/>
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -91,14 +34,7 @@
                     <span>Tags</span>
                 </p>
                 <ul class="menu-list">
-                    <li @click="changeTab('Tags')">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-tag"></i>
-                            </span>
-                            <span>Tag</span>
-                        </a>
-                    </li>
+                    <NavItem name="Tag" class="fa-solid fa-tag" @action="changeTab('Tags')"/>
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -107,31 +43,22 @@
                     <span>JSON</span>
                 </p>
                 <ul class="menu-list">
-                    <li @click="exportJSON">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-file-export"></i>
-                            </span>
-                            <span>Export</span>
-                        </a>
-                    </li>
-                    <li @click="importJSON">
-                        <a>
-                            <span class="icon">
-                                <i class="fa-solid fa-file-import"></i>
-                            </span>
-                            <span>Import</span>
-                        </a>
-                    </li>
+                    <NavItem name="Export" class="fa-solid fa-file-export" @action="exportJSON"/>
+                    <NavItem name="Import" class="fa-solid fa-file-import" @action="importJSON"/>
                 </ul>
             </aside>
+            <!-- <slot name="tag"></slot> -->
         </div>
     </nav>
 </template>
 
 <script>
+import NavItem from '@/components/NavItem.vue';
 export default {
     name: "Navbar",
+    components:{
+        NavItem
+    },
     data() {
         return {
             visibleNavbar: false,
@@ -158,7 +85,7 @@ export default {
             this.$emit('uncompleted');
             this.visibleNavbar = false;
         },
-        deleteAllItems() {
+        deleteAllTodos() {
             this.$emit('delete');
             this.visibleNavbar = false;
         },
