@@ -19,6 +19,23 @@
                     Important
                 </label>
             </div>
+
+            <div class="field has-addons" v-if="readonly == false">
+                <div class="control is-expanded">
+                    <div class="select is-fullwidth">
+
+                        <select v-model="selectedTag">
+                            <option v-for="tag in tags" :key="tag.index" :value="tag">
+                                {{ tag.name }}
+                            </option>
+                        </select>
+                        
+                    </div>
+                </div>
+                <div class="control">
+                    <button class="button is-info" @click="addTodoTag">Add</button>
+                </div>
+            </div>
             <div class="cta" v-if="readonly == false">
                 <button id="bt_save" class="button is-success" :disabled="selectedTodo.name == ''"
                     @click="saveTodo(selectedTodo.index, selectedTodo)">Save</button>
@@ -34,32 +51,44 @@ import Field from '@/components/Field.vue';
 export default {
     name: "TodoSelected",
     components: {
-        Modal,Field
+        Modal, Field
     },
-    props:{
-        selectedTodo:{
-            type:Object,
-            required:true,
-        },
-        visible:{
-            type:Boolean,
-            required:true,
-        },
-        readonly:{
-            type:Boolean,
-            required:true,
+    data() {
+        return {
+            selectedTag: {}
         }
     },
-    emits:['toggle','save','important'],
-    methods:{
-        toggleModal(){
+    props: {
+        selectedTodo: {
+            type: Object,
+            required: true,
+        },
+        visible: {
+            type: Boolean,
+            required: true,
+        },
+        readonly: {
+            type: Boolean,
+            required: true,
+        },
+        tags: {
+            type: Array,
+            required: true,
+        },
+    },
+    emits: ['toggle', 'save', 'important', 'add-todo-tag'],
+    methods: {
+        toggleModal() {
             this.$emit('toggle')
         },
-        markAsImportant(todo){
-            this.$emit('important',todo)
+        markAsImportant(todo) {
+            this.$emit('important', todo)
         },
-        saveTodo(index,todo){
-            this.$emit('save',[index,todo])
+        saveTodo(index, todo) {
+            this.$emit('save', [index, todo])
+        },
+        addTodoTag() {
+            this.$emit('add-todo-tag', this.selectedTag)
         }
     }
 }

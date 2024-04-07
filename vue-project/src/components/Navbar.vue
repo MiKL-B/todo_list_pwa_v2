@@ -34,7 +34,7 @@
                     <span>Tags</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Tag" class="fa-solid fa-tag" @action="changeTab('Tags')"/>
+                    <NavItem name="All" class="fa-solid fa-tag" @action="changeTab('Tags')"/>
                 </ul>
                 <p class="menu-label">
                     <span class="icon">

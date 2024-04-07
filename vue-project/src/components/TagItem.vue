@@ -1,7 +1,7 @@
 <template>
     <div class="card mb-2 p-2">
         <div class="card-left">
-            <span class="icon mx-1 is-size-5">
+            <span class="icon mx-1 is-size-5" :class="tag.color" >
                 <i class="fa-solid fa-tag"></i>
             </span>
 
@@ -11,13 +11,13 @@
         </div>
         <div class="card-right is-size-5">
             <span class="icon mr-1">
-                <i class="fa-solid fa-info" @click="readElement(tag.index, tag)"></i>
+                <i class="fa-solid fa-info" @click="readTag(tag)"></i>
             </span>
             <span class="icon mx-1">
-                <i class="fa-solid fa-pen" @click="editElement(tag.index, tag)"></i>
+                <i class="fa-solid fa-pen" @click="editTag(tag)"></i>
             </span>
             <span class="icon has-text-danger ml-1">
-                <i class="fa-regular fa-trash-can" @click="deleteElement(tag.index)"></i>
+                <i class="fa-regular fa-trash-can" @click="deleteTag(tag.index)"></i>
             </span>
         </div>
     </div>
@@ -35,15 +35,22 @@ export default {
     },
     emits: ['read', 'edit', 'delete'],
     methods: {
-        readElement(index, element) {
-            this.$emit('read', [index, element])
+        readTag(tag) {
+            this.$emit('read',tag)
         },
-        editElement(index, element) {
-            this.$emit('edit', [index, element])
+        editTag(tag) {
+            this.$emit('edit',tag)
         },
-        deleteElement(index) {
+        deleteTag(index) {
             this.$emit('delete', index)
         }
     }
 }
 </script>
+
+<style scoped>
+.card-left, .card-right {
+    display: flex;
+    align-items: center;
+}
+</style>

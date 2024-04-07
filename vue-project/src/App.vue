@@ -23,34 +23,43 @@
         <label class="label">Task(s) to do: {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : '' }}</label>
         <label class="label">Filter: {{ currentFilter }}</label>
       </div>
-      <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo.index, todo)"
-        @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo.index, todo)" />
+      <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
+        @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo)" />
+
     </div>
     <div v-else>
-      <p>This section is under development.</p>
+      <TagInput @add="addTag" v-model="newTag" @handlekey="handleEnterKeyTag" />
+      <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag(tag)" @read="readTag(tag)"
+        @delete="deleteTag(tag.index)" />
     </div>
   </div>
 
   <!-- todo modal -->
   <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
-    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" />
-
+    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" :tags="tags"
+    @add-todo-tag="addTodoTag" />
   <!-- tag modal -->
 
 </template>
 
 <script>
-import TodoInput from '@/components/TodoInput.vue';
-import TodoItem from '@/components/TodoItem.vue';
-import TodoSelected from '@/components/TodoSelected.vue';
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
 
+// Todos
+import TodoInput from '@/components/TodoInput.vue';
+import TodoItem from '@/components/TodoItem.vue';
+import TodoSelected from '@/components/TodoSelected.vue';
+
+// Tags
+import TagInput from '@/components/TagInput.vue';
+import TagItem from '@/components/TagItem.vue';
+
 export default {
   name: "App",
   components: {
-    TodoInput, TodoItem, TodoSelected, Field, Modal, Navbar
+    Field, Modal, Navbar, TodoInput, TodoItem, TodoSelected, TagInput, TagItem
   },
   data() {
     return {
@@ -63,8 +72,9 @@ export default {
       todos: JSON.parse(localStorage.getItem("todos")) || [],
 
       // tags
+      newTag: "",
       tags: JSON.parse(localStorage.getItem('tags')) || [],
-
+      colors: ['has-text-info', 'has-text-danger', 'has-text-warning', 'has-text-success'],
       // miscellaneous
       visibleModal: false,
     }
@@ -110,18 +120,25 @@ export default {
       this.todos.push(todo)
       this.saveLocalStorage()
     },
-    displayItem(index, todo) {
+    addTodoTag(selectedTag) {
+      if (this.selectedTodo.tags.includes(selectedTag)) {
+        return;
+      }
+      if (this.selectedTodo.tags.length < 3) {
+        this.selectedTodo.tags.push(selectedTag)
+      }
+    },
+    displayItem(todo) {
       this.visibleModal = true;
       this.selectedTodo = { ...todo };
-      this.selectedTodo.index = index;
     },
-    readTodo(index, todo) {
+    readTodo(todo) {
       this.readonly = true;
-      this.displayItem(index, todo);
+      this.displayItem(todo);
     },
-    editTodo(index, todo) {
+    editTodo(todo) {
       this.readonly = false;
-      this.displayItem(index, todo);
+      this.displayItem(todo);
     },
     markAsCompleted(todo) {
       todo.completed = !todo.completed
@@ -187,6 +204,50 @@ export default {
     // #endregion
 
     // #region TAGS
+    addTag() {
+      if (this.newTag === "") {
+        return;
+      }
+      let indexRandomColor = Math.floor(Math.random() * this.colors.length)
+      let randomColor = this.colors[indexRandomColor]
+      let tag = {
+        index: this.uuid(),
+        name: this.newTag,
+        createdDate: this.getDate(),
+        color: randomColor,
+      }
+      this.newTag = "";
+      this.tags.push(tag);
+      this.saveLocalStorageTag();
+    },
+    editTag(tag) {
+      console.log("edit")
+    },
+    readTag(tag) {
+      console.log("read")
+    },
+    deleteTag(index) {
+      for (let i = 0; i < this.tags.length; i++) {
+        if (this.tags[i].index === index) {
+          this.tags.splice(i, 1)
+        }
+      }
+      this.saveLocalStorageTag();
+      //   for (let i = 0; i < this.todos.length; i++) {
+      //     for (let j = 0; j < this.todos[i].tags.length; j++) {
+      //       if (this.tags[index].name == this.todos[i].tags[j].name) {
+      //         this.todos[i].tags.splice(j, 1)
+      //       }
+      //     }
+      //   }
+      //   this.tags.splice(index, 1);
+      // }
+    },
+    handleEnterKeyTag(event) {
+      if (event.key == 'Enter') {
+        this.addTag()
+      }
+    },
     saveLocalStorageTag() {
       localStorage.setItem('tags', JSON.stringify(this.tags));
     },
@@ -269,15 +330,7 @@ export default {
     // #endregion
   }
 }
-//   for (let i = 0; i < this.todos.length; i++) {
-//     for (let j = 0; j < this.todos[i].tags.length; j++) {
-//       if (this.tags[index].name == this.todos[i].tags[j].name) {
-//         this.todos[i].tags.splice(j, 1)
-//       }
-//     }
-//   }
-//   this.tags.splice(index, 1);
-// }
+
 </script>
 
 <style>

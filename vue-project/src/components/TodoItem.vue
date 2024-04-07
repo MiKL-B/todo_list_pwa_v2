@@ -1,17 +1,20 @@
 <template>
     <div class="card card-todo mb-2 p-2">
         <div class="card-top">
-            <span class="icon mx-1 is-size-5" :class="todo.completed ? 'has-text-success' : ''">
-                <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
-                    @click="markAsCompleted(todo)"></i>
-            </span>
+            <div class="card-top-left">
 
-            <div class="card-info ml-2">
-                <span class="priority" v-if="todo.priority == 1">
-                    <i class="fa-solid fa-exclamation has-text-danger"></i>
-                    <i class="fa-solid fa-exclamation has-text-danger"></i>
+                <span class="icon mx-1 is-size-5" :class="todo.completed ? 'has-text-success' : ''">
+                    <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
+                        @click="markAsCompleted(todo)"></i>
                 </span>
-                <span class="card-text">{{ todo.name }}</span>
+    
+                <div class="card-info ml-2">
+                    <span class="priority" v-if="todo.priority == 1">
+                        <i class="fa-solid fa-exclamation has-text-danger"></i>
+                        <i class="fa-solid fa-exclamation has-text-danger"></i>
+                    </span>
+                    <span class="card-text">{{ todo.name }}</span>
+                </div>
             </div>
 
             <div class=" is-size-5">
@@ -26,13 +29,12 @@
                 </span>
             </div>
         </div>
-        <div class="card-bottom" v-if="todo.tags.length < 0">
-            <span v-for="tag in todo.tags" :key="tag.id" class="tag">
-                <i class="fa-solid fa-tag"></i>
-                <span>{{tag}}</span>
+        <div class="card-bottom" v-if="todo.tags.length > 0">
+            <span v-for="tag in todo.tags" :key="tag.index" class="tag mx-1">
+                <i class="fa-solid fa-tag" :class="tag.color"></i>
+                <span>{{tag.name}}</span>
             </span>
-        </div>
-      
+        </div>      
     </div>
 </template>
 
@@ -74,6 +76,7 @@ export default {
 }
 .card-todo{
     display: grid;
+    grid-template-columns: 1fr;
     grid-template-rows:repeat(auto,0.5fr);
 }
 
@@ -81,6 +84,11 @@ export default {
 .card-top {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    width:100%;
+}
+.card-top-left{
+    display:flex;
     align-items: center;
 }
 .card-bottom{
