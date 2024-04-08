@@ -10,11 +10,13 @@
                     <span>Filters</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter('All')"/>
-                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter('Today')"/>
-                    <NavItem name="Important" class="fa-solid fa-triangle-exclamation" @action="setFilter('Important')"/>
-                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter('Completed')"/>
-                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter('Uncompleted')"/>
+                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter('All')" />
+                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter('Today')" />
+                    <NavItem name="Important" class="fa-solid fa-triangle-exclamation"
+                        @action="setFilter('Important')" />
+                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter('Completed')" />
+                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter('Uncompleted')" />
+                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color" class="fa-solid fa-tag" @action="setFilter(tag.name)"/>
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -23,9 +25,10 @@
                     <span>Actions</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Mark all as completed" class="fa-solid fa-circle-check" @action="markAllAsCompleted"/>
-                    <NavItem name="Mark all as uncompleted" class="fa-solid fa-circle" @action="markAllAsUncompleted"/>
-                    <NavItem name="Clear all completed" class="fa-solid fa-broom" @action="deleteAllTodos"/>
+                    <NavItem name="Mark all as completed" class="fa-solid fa-circle-check"
+                        @action="markAllAsCompleted" />
+                    <NavItem name="Mark all as uncompleted" class="fa-solid fa-circle" @action="markAllAsUncompleted" />
+                    <NavItem name="Clear all completed" class="fa-solid fa-broom" @action="deleteAllTodos" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -34,7 +37,7 @@
                     <span>Tags</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="All" class="fa-solid fa-tag" @action="changeTab('Tags')"/>
+                    <NavItem name="Tag list" class="fa-solid fa-tag" @action="changeTab('Tags')" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -43,11 +46,19 @@
                     <span>JSON</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Export" class="fa-solid fa-file-export" @action="exportJSON"/>
-                    <NavItem name="Import" class="fa-solid fa-file-import" @action="importJSON"/>
+                    <NavItem name="Export" class="fa-solid fa-file-export" @action="exportJSON" />
+                    <NavItem name="Import" class="fa-solid fa-file-import" @action="importJSON" />
+                </ul>
+                <p class="menu-label">
+                    <span class="icon">
+                        <i class="fa-solid fa-gear"></i>
+                    </span>
+                    <span>Settings</span>
+                </p>
+                <ul class="menu-list">
+                    <NavItem name="Language" class="fa-solid fa-language" />
                 </ul>
             </aside>
-            <!-- <slot name="tag"></slot> -->
         </div>
     </nav>
 </template>
@@ -56,7 +67,7 @@
 import NavItem from '@/components/NavItem.vue';
 export default {
     name: "Navbar",
-    components:{
+    components: {
         NavItem
     },
     data() {
@@ -64,8 +75,10 @@ export default {
             visibleNavbar: false,
         }
     },
-    emits: ['filter', 'tab', 'completed', 'uncompleted', 'delete','export','import'],
+    props: ['tags'],
+    emits: ['filter', 'tab', 'completed', 'uncompleted', 'delete', 'export', 'import'],
     methods: {
+        // todos
         setFilter(type) {
             this.$emit('filter', type)
             this.visibleNavbar = false;
@@ -94,10 +107,10 @@ export default {
             this.visibleNavbar = false;
         },
 
-        importJSON(){
+        importJSON() {
             this.$emit('import');
             this.visibleNavbar = false;
-        }
+        },
     }
 }
 </script>

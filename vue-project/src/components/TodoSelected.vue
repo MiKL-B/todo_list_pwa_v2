@@ -19,12 +19,12 @@
                     Important
                 </label>
             </div>
-
-            <div class="field has-addons" v-if="readonly == false">
+            <label class="label">Tags</label>
+            <div class="field has-addons" v-if="readonly == false && tags.length > 0">
                 <div class="control is-expanded">
                     <div class="select is-fullwidth">
 
-                        <select v-model="selectedTag">
+                        <select v-model="selectedTodoTag">
                             <option v-for="tag in tags" :key="tag.index" :value="tag">
                                 {{ tag.name }}
                             </option>
@@ -55,7 +55,7 @@ export default {
     },
     data() {
         return {
-            selectedTag: {}
+            selectedTodoTag: {}
         }
     },
     props: {
@@ -88,7 +88,7 @@ export default {
             this.$emit('save', [index, todo])
         },
         addTodoTag() {
-            this.$emit('add-todo-tag', this.selectedTag)
+            this.$emit('add-todo-tag', this.selectedTodoTag)
         }
     }
 }

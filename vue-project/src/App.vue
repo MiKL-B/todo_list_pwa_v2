@@ -1,36 +1,41 @@
 <template>
 
   <div class="nav">
-    <Navbar @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted" @uncompleted="markAllAsUncompleted"
-      @delete="deleteAllItems" @export="exportJSON" @import="openFileInput">
-      <!-- <template v-slot:tag>
-         tag list 
-       NavElement set filter ..
-        mark all as completed
-       mark all as uncompleted 
-        delete all items ... 
-         export json
-      </template> -->
+    <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
+      @uncompleted="markAllAsUncompleted" @delete="deleteAllItems" @export="exportJSON" @import="openFileInput">
     </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
-    <h2 class="title">TodoList</h2>
+    <h2 class="title">{{ activeTab == 'Todos' ? 'TodoList' : 'TagList' }}</h2>
   </div>
 
   <div class="container px-4">
+    <!-- todos -->
     <div v-if="activeTab === 'Todos'">
       <TodoInput @add="addTodo" v-model="newTodo" @handlekey="handleEnterKeyTodo" />
       <div class="filters">
         <label class="label">Task(s) to do: {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : '' }}</label>
         <label class="label">Filter: {{ currentFilter }}</label>
       </div>
-      <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
-        @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo)" />
-
+      <div v-if="todos.length > 0">
+        <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
+          @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo)" />
+      </div>
+      <div class="empty-list" v-else>
+        <i class="fa-solid fa-mug-saucer"></i>
+        <h2 class="subtitle">Empty todos</h2>
+      </div>
     </div>
+    <!-- tags -->
     <div v-else>
       <TagInput @add="addTag" v-model="newTag" @handlekey="handleEnterKeyTag" />
-      <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag(tag)" @read="readTag(tag)"
-        @delete="deleteTag(tag.index)" />
+      <div v-if="tags.length > 0">
+        <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag(tag)" @read="readTag(tag)"
+          @delete="deleteTag(tag.index)" />
+      </div>
+      <div class="empty-list" v-else>
+        <i class="fa-solid fa-mug-saucer"></i>
+        <h2 class="subtitle">Empty tags</h2>
+      </div>
     </div>
   </div>
 
@@ -38,8 +43,10 @@
   <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
     @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" :tags="tags"
     @add-todo-tag="addTodoTag" />
-  <!-- tag modal -->
 
+  <!-- tag modal -->
+  <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
+    @save="saveTag(selectedTag.index, selectedTag)" />
 </template>
 
 <script>
@@ -55,11 +62,14 @@ import TodoSelected from '@/components/TodoSelected.vue';
 // Tags
 import TagInput from '@/components/TagInput.vue';
 import TagItem from '@/components/TagItem.vue';
+import TagSelected from '@/components/TagSelected.vue';
 
 export default {
   name: "App",
   components: {
-    Field, Modal, Navbar, TodoInput, TodoItem, TodoSelected, TagInput, TagItem
+    Field, Modal, Navbar
+    , TodoInput, TodoItem, TodoSelected
+    , TagInput, TagItem, TagSelected
   },
   data() {
     return {
@@ -69,14 +79,15 @@ export default {
       readonly: false,
       currentFilter: "All",
       activeTab: "Todos",
+      visibleModal: false,
       todos: JSON.parse(localStorage.getItem("todos")) || [],
-
       // tags
       newTag: "",
+      selectedTag: {},
+      visibleModalTag: false,
       tags: JSON.parse(localStorage.getItem('tags')) || [],
       colors: ['has-text-info', 'has-text-danger', 'has-text-warning', 'has-text-success'],
       // miscellaneous
-      visibleModal: false,
     }
   },
   computed: {
@@ -85,27 +96,46 @@ export default {
     },
 
     filteredTodos() {
+      let filteredList = this.todos;
+
       switch (this.currentFilter) {
         case 'All':
-          return this.todos;
+          filteredList = this.todos;
+          break;
         case 'Today':
           let currentDay = new Date().toLocaleDateString();
-          return this.todos.filter((todo) => todo.createdDate.includes(currentDay));
+          filteredList = this.todos.filter(todo => todo.createdDate.includes(currentDay));
+          break;
         case 'Completed':
-          return this.todos.filter((todo) => todo.completed);
+          filteredList = this.todos.filter(todo => todo.completed);
+          break;
         case 'Uncompleted':
-          return this.todos.filter((todo) => !todo.completed);
+          filteredList = this.todos.filter(todo => !todo.completed);
+          break;
         case 'Important':
-          return this.todos.filter((todo) => todo.priority == true);
+          filteredList = this.todos.filter(todo => todo.priority === true);
+          break;
+        default:
+          filteredList = this.todos.filter(todo => {
+            return todo.tags.some(tag => tag.name === this.currentFilter);
+          });
       }
-    }
+      return filteredList;
+    },
   },
   methods: {
 
     // #region TODO
     addTodo() {
       if (this.invalidName(this.newTodo)) return;
-
+      if (this.newTodo == "All"
+        || this.newTodo == "Today"
+        || this.newTodo == "Important"
+        || this.newTodo == "Completed"
+        || this.newTodo == "Uncompleted") {
+        this.newTodo = "";
+        return;
+      }
       let todo = {
         index: this.uuid(),
         name: this.newTodo,
@@ -120,25 +150,30 @@ export default {
       this.todos.push(todo)
       this.saveLocalStorage()
     },
-    addTodoTag(selectedTag) {
-      if (this.selectedTodo.tags.includes(selectedTag)) {
-        return;
+    addTodoTag(selectedTodoTag) {
+      for (let i = 0; i < this.selectedTodo.tags.length; i++) {
+        if (this.selectedTodo.tags[i].name === selectedTodoTag.name) {
+          return;
+        }
       }
       if (this.selectedTodo.tags.length < 3) {
-        this.selectedTodo.tags.push(selectedTag)
+        this.selectedTodo.tags.push(selectedTodoTag)
+        this.visibleModal = false;
+        this.saveLocalStorage()
       }
     },
-    displayItem(todo) {
+
+    displayTodo(todo) {
       this.visibleModal = true;
       this.selectedTodo = { ...todo };
     },
     readTodo(todo) {
       this.readonly = true;
-      this.displayItem(todo);
+      this.displayTodo(todo);
     },
     editTodo(todo) {
       this.readonly = false;
-      this.displayItem(todo);
+      this.displayTodo(todo);
     },
     markAsCompleted(todo) {
       todo.completed = !todo.completed
@@ -208,6 +243,20 @@ export default {
       if (this.newTag === "") {
         return;
       }
+      if (this.newTag == "All"
+        || this.newTag == "Today"
+        || this.newTag == "Important"
+        || this.newTag == "Completed"
+        || this.newTag == "Uncompleted") {
+        this.newTag = "";
+        return;
+      }
+      for (let i = 0; i < this.tags.length; i++) {
+        if (this.tags[i].name === this.newTag) {
+          this.newTag = "";
+          return;
+        }
+      }
       let indexRandomColor = Math.floor(Math.random() * this.colors.length)
       let randomColor = this.colors[indexRandomColor]
       let tag = {
@@ -220,28 +269,63 @@ export default {
       this.tags.push(tag);
       this.saveLocalStorageTag();
     },
-    editTag(tag) {
-      console.log("edit")
+    displayTag(tag) {
+      this.visibleModalTag = true;
+      this.selectedTag = { ...tag };
+      this.selectedTag.color = tag.color;
+      console.log(this.selectedTag)
     },
     readTag(tag) {
-      console.log("read")
+      this.readonly = true;
+      this.displayTag(tag);
+    },
+    editTag(tag) {
+      this.readonly = false;
+      this.displayTag(tag)
     },
     deleteTag(index) {
-      for (let i = 0; i < this.tags.length; i++) {
-        if (this.tags[i].index === index) {
-          this.tags.splice(i, 1)
+      for (let i = 0; i < this.todos.length; i++) {
+        for (let j = 0; j < this.todos[i].tags.length; j++) {
+          if (this.todos[i].tags[j].index === index) {
+            this.todos[i].tags.splice(j, 1);
+            this.saveLocalStorage()
+            break;
+          }
         }
       }
-      this.saveLocalStorageTag();
-      //   for (let i = 0; i < this.todos.length; i++) {
-      //     for (let j = 0; j < this.todos[i].tags.length; j++) {
-      //       if (this.tags[index].name == this.todos[i].tags[j].name) {
-      //         this.todos[i].tags.splice(j, 1)
-      //       }
-      //     }
-      //   }
-      //   this.tags.splice(index, 1);
-      // }
+      const globalTagIndex = this.tags.findIndex(tag => tag.index === index);
+      if (globalTagIndex !== -1) {
+        this.tags.splice(globalTagIndex, 1);
+        this.saveLocalStorageTag();
+      }
+    },
+    // addTagColor(selectedColor){
+    //   this.selectedTag.color = selectedColor;
+    //   this.visibleModalTag = false;
+    //   this.saveLocalStorageTag()
+    // },
+    saveTag(index, tag) {
+      for (let i = 0; i < this.tags.length; i++) {
+        if (this.tags[i].index === index) {
+          console.log(tag)
+          this.tags[i] = { ...tag };
+          this.tags[i].color = tag.color;
+
+          for (let j = 0; j < this.todos.length; j++) {
+            for (let k = 0; k < this.todos[j].tags.length; k++) {
+              if (this.todos[j].tags[k].index === this.tags[i].index) {
+                this.todos[j].tags[k].color = tag.color;
+                this.todos[j].tags[k].name = tag.name;
+              }
+            }
+          }
+        }
+      }
+
+
+      this.visibleModalTag = false;
+      this.saveLocalStorageTag()
+      this.saveLocalStorage()
     },
     handleEnterKeyTag(event) {
       if (event.key == 'Enter') {
@@ -270,6 +354,7 @@ export default {
       this.currentFilter = type;
       this.changeTab('Todos')
     },
+
     uuid() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0,
@@ -288,6 +373,9 @@ export default {
     },
     toggleModal() {
       this.visibleModal = !this.visibleModal
+    },
+    toggleModalTag() {
+      this.visibleModalTag = !this.visibleModalTag
     },
     // #endregion
 
@@ -392,5 +480,19 @@ i {
 .filters {
   display: flex;
   justify-content: space-between;
+}
+
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 5rem;
+  opacity: 0.3;
+}
+
+.empty-list i {
+  font-size: 5rem;
+  cursor: default;
 }
 </style>
