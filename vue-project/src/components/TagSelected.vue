@@ -3,7 +3,8 @@
         <template v-slot:content>
             <Field name="Name" v-model="selectedTag.name" :disabled="readonly" />
             <Field name="Created date" v-if="readonly" v-model="selectedTag.createdDate" :disabled="readonly" />
-            <label class="label">Color</label>
+            <Field name="Updated date" v-if="readonly" v-model="selectedTag.updatedDate" :disabled="readonly" />
+            <label class="label" v-if="readonly == false">Color</label>
             <div class="field has-addons" v-if="readonly == false">
                 <div class="control is-expanded">
                     <div class="select is-fullwidth">

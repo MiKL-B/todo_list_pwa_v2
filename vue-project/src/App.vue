@@ -263,6 +263,7 @@ export default {
         index: this.uuid(),
         name: this.newTag,
         createdDate: this.getDate(),
+        updatedDate: this.getDate(),
         color: randomColor,
       }
       this.newTag = "";
@@ -273,7 +274,6 @@ export default {
       this.visibleModalTag = true;
       this.selectedTag = { ...tag };
       this.selectedTag.color = tag.color;
-      console.log(this.selectedTag)
     },
     readTag(tag) {
       this.readonly = true;
@@ -284,6 +284,7 @@ export default {
       this.displayTag(tag)
     },
     deleteTag(index) {
+      // delete tag in todo
       for (let i = 0; i < this.todos.length; i++) {
         for (let j = 0; j < this.todos[i].tags.length; j++) {
           if (this.todos[i].tags[j].index === index) {
@@ -292,24 +293,23 @@ export default {
             break;
           }
         }
-      }
+      } 
+      // delete right tag
       const globalTagIndex = this.tags.findIndex(tag => tag.index === index);
       if (globalTagIndex !== -1) {
         this.tags.splice(globalTagIndex, 1);
         this.saveLocalStorageTag();
       }
     },
-    // addTagColor(selectedColor){
-    //   this.selectedTag.color = selectedColor;
-    //   this.visibleModalTag = false;
-    //   this.saveLocalStorageTag()
-    // },
+
     saveTag(index, tag) {
+      // update date in tag list and in todo
       for (let i = 0; i < this.tags.length; i++) {
         if (this.tags[i].index === index) {
           console.log(tag)
           this.tags[i] = { ...tag };
           this.tags[i].color = tag.color;
+          this.tags[i].updatedDate = this.getDate()
 
           for (let j = 0; j < this.todos.length; j++) {
             for (let k = 0; k < this.todos[j].tags.length; k++) {
@@ -321,8 +321,6 @@ export default {
           }
         }
       }
-
-
       this.visibleModalTag = false;
       this.saveLocalStorageTag()
       this.saveLocalStorage()
