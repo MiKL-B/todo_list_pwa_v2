@@ -1,25 +1,25 @@
 <template>
     <Modal v-if="visible" @close="toggleModal">
         <template v-slot:content>
-            <Field name="Name" v-model="selectedTodo.name" :disabled="readonly" />
-            <Field name="Description" type="textarea" v-model="selectedTodo.description" :disabled="readonly" />
-            <Field name="Created date" v-if="readonly" v-model="selectedTodo.createdDate" :disabled="readonly" />
-            <Field name="Updated date" v-if="readonly" v-model="selectedTodo.updatedDate" :disabled="readonly" />
-            <label class="label">State</label>
+            <Field :name="$t('name')" v-model="selectedTodo.name" :disabled="readonly" />
+            <Field :name="$t('description')" type="textarea" v-model="selectedTodo.description" :disabled="readonly" />
+            <Field :name="$t('createddate')" v-if="readonly" v-model="selectedTodo.createdDate" :disabled="readonly" />
+            <Field :name="$t('updateddate')" v-if="readonly" v-model="selectedTodo.updatedDate" :disabled="readonly" />
+            <label class="label">{{ $t('state') }}</label>
             <div class="field">
                 <label class="checkbox">
                     <input type="checkbox" v-model="selectedTodo.completed" :disabled="readonly" />
-                    Completed
+                    {{ $t('is_completed') }}
                 </label>
             </div>
             <div class="field">
                 <label class="checkbox">
                     <input type="checkbox" v-model="selectedTodo.priority" :disabled="readonly"
                         @click="markAsImportant(selectedTodo)" />
-                    Important
+                    {{ $t('is_important') }}
                 </label>
             </div>
-            <label class="label">Tags</label>
+            <label class="label" v-if="readonly == false && tags.length > 0">{{ $t('tags') }}</label>
             <div class="field has-addons" v-if="readonly == false && tags.length > 0">
                 <div class="control is-expanded">
                     <div class="select is-fullwidth">
@@ -33,12 +33,12 @@
                     </div>
                 </div>
                 <div class="control">
-                    <button class="button is-info" @click="addTodoTag">Add</button>
+                    <button class="button is-info" @click="addTodoTag">{{$t('add')}}</button>
                 </div>
             </div>
             <div class="cta" v-if="readonly == false">
                 <button id="bt_save" class="button is-success" :disabled="selectedTodo.name == ''"
-                    @click="saveTodo(selectedTodo.index, selectedTodo)">Save</button>
+                    @click="saveTodo(selectedTodo.index, selectedTodo)">{{ $t('save') }}</button>
             </div>
         </template>
     </Modal>

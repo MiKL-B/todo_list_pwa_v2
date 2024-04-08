@@ -4,10 +4,10 @@
         <div class="control">
             <div v-if="type == 'textarea'">
                 <textarea class="textarea has-fixed-size" :value="modelValue" @input="onInput"
-                    :placeholder="'Enter ' + name" :disabled="disabled"></textarea>
+                    :placeholder="$t('enter_text_placeholder')" :disabled="disabled"></textarea>
             </div>
             <div v-else>
-                <input :value="modelValue" @input="onInput" class="input" type="text" :placeholder="'Enter ' + name"
+                <input :value="modelValue" @input="onInput" class="input" type="text" :placeholder="$t('enter_text_placeholder')"
                     :disabled="disabled" />
             </div>
         </div>

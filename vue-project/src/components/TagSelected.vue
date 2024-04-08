@@ -9,22 +9,20 @@
                 <div class="control is-expanded">
                     <div class="select is-fullwidth">
                         <select v-model="selectedTag.color">
-                            <option value="has-text-info">Blue</option>
-                            <option value="has-text-success">Green</option>
-                            <option value="has-text-warning">Yellow</option>
-                            <option value="has-text-danger">Red</option>
+                            <option value="primary">Blue</option>
+                            <option value="success">Green</option>
+                            <option value="warning">Yellow</option>
+                            <option value="danger">Red</option>
+                            <option value="epic">Purple</option>
+                            <option value="legendary">Orange</option>
                         </select>
                     </div>
-                </div>
-                <div class="control">
-                    <!-- <button class="button is-info" @click="addTagColor">Add</button> -->
                 </div>
             </div>
             <div class="cta" v-if="readonly == false">
                 <button id="bt_save" class="button is-success" :disabled="selectedTag.name == ''"
                     @click="saveTag(selectedTag.index, selectedTag)">Save</button>
             </div>
-            <!-- {{ selectedColor }} -->
         </template>
     </Modal>
 
@@ -40,7 +38,6 @@ export default {
     },
     data() {
         return {
-            // selectedColor: ""
         }
     },
     props: {

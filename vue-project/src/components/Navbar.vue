@@ -10,13 +10,14 @@
                     <span>Filters</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter('All')" />
-                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter('Today')" />
+                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter(FILTER_ALL)" />
+                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
                     <NavItem name="Important" class="fa-solid fa-triangle-exclamation"
                         @action="setFilter('Important')" />
-                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter('Completed')" />
-                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter('Uncompleted')" />
-                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color" class="fa-solid fa-tag" @action="setFilter(tag.name)"/>
+                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
+                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter(FILTER_UNCOMPLETED)" />
+                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color"
+                        class="fa-solid fa-tag" @action="setFilter(tag.name)" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -56,7 +57,15 @@
                     <span>Settings</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Language" class="fa-solid fa-language" />
+                    <div class="language-item">
+                     
+                        <NavItem name="Language" class="fa-solid fa-language"/>
+                        <div class="select">
+                            <select v-model="language" @change="setLanguage">
+                                <option v-for="language in languages" :value="language">{{ language }}</option>
+                            </select>
+                        </div>
+                    </div>
                 </ul>
             </aside>
         </div>
@@ -72,11 +81,18 @@ export default {
     },
     data() {
         return {
+            FILTER_ALL:1,
+            FILTER_TODAY:2,
+            FILTER_COMPLETED:3,
+            FILTER_UNCOMPLETED:4,
+            FILTER_IMPORTANT:5,
+            language: "",
+            languages: ['en', 'fr'],
             visibleNavbar: false,
         }
     },
     props: ['tags'],
-    emits: ['filter', 'tab', 'completed', 'uncompleted', 'delete', 'export', 'import'],
+    emits: ['filter', 'tab', 'completed', 'uncompleted', 'delete', 'export', 'import', 'language'],
     methods: {
         // todos
         setFilter(type) {
@@ -111,6 +127,15 @@ export default {
             this.$emit('import');
             this.visibleNavbar = false;
         },
+        setLanguage() {
+            this.$emit('language', this.language);
+            this.visibleNavbar = false;
+        }
     }
 }
 </script>
+<style>
+.language-item {
+    display: flex;
+}
+</style>

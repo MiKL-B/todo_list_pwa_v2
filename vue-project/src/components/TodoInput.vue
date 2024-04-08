@@ -2,11 +2,11 @@
     <div class="field has-addons">
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
-                placeholder="Add a new todo..." @keydown="handleEnterKeyTodo"
+                :placeholder="$t('todo_input_placeholder')" @keydown="handleEnterKeyTodo"
                 :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
-            <button id="button" class="button is-success" @click="addTodo">Submit</button>
+            <button id="button" class="button is-success" @click="addTodo">{{ $t('submit') }}</button>
         </div>
     </div>
 </template>

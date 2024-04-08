@@ -2,10 +2,11 @@
 
   <div class="nav">
     <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
-      @uncompleted="markAllAsUncompleted" @delete="deleteAllItems" @export="exportJSON" @import="openFileInput">
+      @uncompleted="markAllAsUncompleted" @delete="deleteAllItems" @export="exportJSON" @import="openFileInput"
+      @language="setLanguage">
     </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
-    <h2 class="title">{{ activeTab == 'Todos' ? 'TodoList' : 'TagList' }}</h2>
+    <h2 class="title">{{ activeTab == 'Todos' ? $t('todolist') : $t('taglist') }}</h2>
   </div>
 
   <div class="container px-4">
@@ -13,8 +14,9 @@
     <div v-if="activeTab === 'Todos'">
       <TodoInput @add="addTodo" v-model="newTodo" @handlekey="handleEnterKeyTodo" />
       <div class="filters">
-        <label class="label">Task(s) to do: {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : '' }}</label>
-        <label class="label">Filter: {{ currentFilter }}</label>
+        <label class="label">{{ $t('todoremaining') }} {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : ''
+          }}</label>
+        <label class="label">{{ $t('filter') }} {{ currentTextFilter}}</label>
       </div>
       <div v-if="todos.length > 0">
         <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
@@ -47,6 +49,14 @@
   <!-- tag modal -->
   <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
     @save="saveTag(selectedTag.index, selectedTag)" />
+  <!-- <div class="notification">
+    <button class="delete"></button>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit lorem ipsum dolor.
+    <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
+    nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus diam,
+    et dictum <a>felis venenatis</a> efficitur.
+  </div> -->
+  <!-- {{ $t('hello') }} -->
 </template>
 
 <script>
@@ -77,7 +87,7 @@ export default {
       newTodo: "",
       selectedTodo: {},
       readonly: false,
-      currentFilter: "All",
+      currentFilter: this.FILTER_ALL,
       activeTab: "Todos",
       visibleModal: false,
       todos: JSON.parse(localStorage.getItem("todos")) || [],
@@ -86,33 +96,69 @@ export default {
       selectedTag: {},
       visibleModalTag: false,
       tags: JSON.parse(localStorage.getItem('tags')) || [],
-      colors: ['has-text-info', 'has-text-danger', 'has-text-warning', 'has-text-success'],
-      // miscellaneous
+      colors: ['primary', 'success', 'danger', 'warning', 'epic', 'legendary'],
+      // filter
+      FILTER_ALL: 1,
+      FILTER_TODAY: 2,
+      FILTER_COMPLETED: 3,
+      FILTER_UNCOMPLETED: 4,
+      FILTER_IMPORTANT: 5,
     }
+  },
+  mounted() {
+    this.setFilter(this.FILTER_ALL)
+    // language
+    let localLanguage = localStorage.getItem('language');
+    if (localLanguage == null) {
+      localLanguage = 'en';
+    }
+    this.$i18n.locale = localLanguage;
+    localStorage.setItem("language", localLanguage)
   },
   computed: {
     remaining() {
       return this.todos.filter((todo) => !todo.completed).length;
     },
-
+    currentTextFilter() {
+      let text = "";
+      switch (this.currentFilter) {
+        case this.FILTER_ALL:
+          text = this.$t('all');
+          break;
+        case this.FILTER_TODAY:
+          text = this.$t('today');
+          break;
+        case this.FILTER_COMPLETED:
+          text = this.$t('completed');
+          break;
+        case this.FILTER_UNCOMPLETED:
+          text = this.$t('uncompleted');
+          break;
+        case this.FILTER_IMPORTANT:
+          text = this.$t('important');
+          break;
+        default:
+          text = this.currentFilter;
+      }
+      return text;
+    },
     filteredTodos() {
       let filteredList = this.todos;
-
       switch (this.currentFilter) {
-        case 'All':
+        case this.FILTER_ALL:
           filteredList = this.todos;
           break;
-        case 'Today':
+        case this.FILTER_TODAY:
           let currentDay = new Date().toLocaleDateString();
           filteredList = this.todos.filter(todo => todo.createdDate.includes(currentDay));
           break;
-        case 'Completed':
+        case this.FILTER_COMPLETED:
           filteredList = this.todos.filter(todo => todo.completed);
           break;
-        case 'Uncompleted':
+        case this.FILTER_UNCOMPLETED:
           filteredList = this.todos.filter(todo => !todo.completed);
           break;
-        case 'Important':
+        case this.FILTER_IMPORTANT:
           filteredList = this.todos.filter(todo => todo.priority === true);
           break;
         default:
@@ -120,22 +166,20 @@ export default {
             return todo.tags.some(tag => tag.name === this.currentFilter);
           });
       }
-      return filteredList;
+
+      return filteredList
     },
   },
   methods: {
+    setFilter(type) {
+      this.currentFilter = type;
+      this.changeTab('Todos')
+    },
 
     // #region TODO
     addTodo() {
       if (this.invalidName(this.newTodo)) return;
-      if (this.newTodo == "All"
-        || this.newTodo == "Today"
-        || this.newTodo == "Important"
-        || this.newTodo == "Completed"
-        || this.newTodo == "Uncompleted") {
-        this.newTodo = "";
-        return;
-      }
+
       let todo = {
         index: this.uuid(),
         name: this.newTodo,
@@ -243,14 +287,7 @@ export default {
       if (this.newTag === "") {
         return;
       }
-      if (this.newTag == "All"
-        || this.newTag == "Today"
-        || this.newTag == "Important"
-        || this.newTag == "Completed"
-        || this.newTag == "Uncompleted") {
-        this.newTag = "";
-        return;
-      }
+
       for (let i = 0; i < this.tags.length; i++) {
         if (this.tags[i].name === this.newTag) {
           this.newTag = "";
@@ -293,7 +330,7 @@ export default {
             break;
           }
         }
-      } 
+      }
       // delete right tag
       const globalTagIndex = this.tags.findIndex(tag => tag.index === index);
       if (globalTagIndex !== -1) {
@@ -347,10 +384,6 @@ export default {
         }
       }
       return isInvalid
-    },
-    setFilter(type) {
-      this.currentFilter = type;
-      this.changeTab('Todos')
     },
 
     uuid() {
@@ -412,8 +445,12 @@ export default {
         }
       };
       reader.readAsText(file);
-    }
+    },
     // #endregion
+    setLanguage(language) {
+      this.$i18n.locale = language;
+      localStorage.setItem("language", language);
+    }
   }
 }
 
@@ -492,5 +529,31 @@ i {
 .empty-list i {
   font-size: 5rem;
   cursor: default;
+}
+
+/* color */
+
+.primary {
+  color: hsl(200, 80%, 60%);
+}
+
+.warning {
+  color: hsl(50, 80%, 60%);
+}
+
+.danger {
+  color: hsl(0, 80%, 60%);
+}
+
+.success {
+  color: hsl(120, 80%, 60%);
+}
+
+.legendary {
+  color: hsl(20, 80%, 60%);
+}
+
+.epic {
+  color: hsl(270, 80%, 60%);
 }
 </style>
