@@ -49,20 +49,14 @@
   <!-- tag modal -->
   <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
     @save="saveTag(selectedTag.index, selectedTag)" />
-  <!-- <div class="notification">
-    <button class="delete"></button>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit lorem ipsum dolor.
-    <strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec
-    nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam gravida purus diam,
-    et dictum <a>felis venenatis</a> efficitur.
-  </div> -->
-  <!-- {{ $t('hello') }} -->
+ <Notification/>
 </template>
 
 <script>
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
+import Notification from '@/components/Notification.vue';
 
 // Todos
 import TodoInput from '@/components/TodoInput.vue';
@@ -77,7 +71,7 @@ import TagSelected from '@/components/TagSelected.vue';
 export default {
   name: "App",
   components: {
-    Field, Modal, Navbar
+    Field, Modal, Navbar, Notification
     , TodoInput, TodoItem, TodoSelected
     , TagInput, TagItem, TagSelected
   },
