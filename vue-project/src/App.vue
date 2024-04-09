@@ -414,7 +414,11 @@ export default {
     exportJSON() {
       if (window.confirm('Are you sure you want to export and download your data ?')) {
         let filename = prompt('Enter the name of the export file.', 'todos')
-        const jsonData = this.todos
+        const jsonData = {
+          todos:this.todos,
+          tags:this.tags,
+          language:this.$i18n.locale,
+        }
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
         const downloadLink = document.createElement("a");
@@ -438,7 +442,9 @@ export default {
       reader.onload = (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
-          this.todos = jsonData
+          this.todos = jsonData.todos
+          this.tags = jsonData.tags
+          this.$i18n.locale = jsonData.language
           this.saveLocalStorage()
         } catch (error) {
           console.error("Erreur lors de la lecture du fichier JSON : " + error);
