@@ -16,7 +16,7 @@
       <div class="filters">
         <label class="label">{{ $t('todoremaining') }} {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : ''
           }}</label>
-        <label class="label">{{ $t('filter') }} {{ currentTextFilter}}</label>
+        <label class="label">{{ $t('filter') }} {{ currentTextFilter }}</label>
       </div>
       <div v-if="todos.length > 0">
         <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
@@ -49,14 +49,14 @@
   <!-- tag modal -->
   <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
     @save="saveTag(selectedTag.index, selectedTag)" />
- <Notification/>
+
 </template>
 
 <script>
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
-import Notification from '@/components/Notification.vue';
+
 
 // Todos
 import TodoInput from '@/components/TodoInput.vue';
@@ -67,11 +67,12 @@ import TodoSelected from '@/components/TodoSelected.vue';
 import TagInput from '@/components/TagInput.vue';
 import TagItem from '@/components/TagItem.vue';
 import TagSelected from '@/components/TagSelected.vue';
-
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 export default {
   name: "App",
   components: {
-    Field, Modal, Navbar, Notification
+    Field, Modal, Navbar
     , TodoInput, TodoItem, TodoSelected
     , TagInput, TagItem, TagSelected
   },
@@ -97,6 +98,12 @@ export default {
       FILTER_COMPLETED: 3,
       FILTER_UNCOMPLETED: 4,
       FILTER_IMPORTANT: 5,
+
+      notification: false,
+      notificationColor: "",
+      notificationMessage: '',
+      timeoutId: null,
+      elapsedTime: 0,
     }
   },
   mounted() {
@@ -184,11 +191,20 @@ export default {
         priority: false,
         tags: [],
       }
-      this.newTodo = "";
-      this.todos.push(todo)
+      this.todos.push(todo);
       this.saveLocalStorage()
+      toast.success(`Tâche ${this.newTodo} bien ajoutée`, {
+        position: toast.POSITION.BOTTOM_CENTER,
+        autoClose: 2000,
+        theme: "colored",
+      });
+
+      this.newTodo = "";
     },
     addTodoTag(selectedTodoTag) {
+      if (selectedTodoTag.name == undefined) {
+        return;
+      }
       for (let i = 0; i < this.selectedTodo.tags.length; i++) {
         if (this.selectedTodo.tags[i].name === selectedTodoTag.name) {
           return;
@@ -371,13 +387,24 @@ export default {
       let isInvalid = false;
       if (name == '') {
         isInvalid = true;
+        toast.error("Nom vide", {
+          position: toast.POSITION.BOTTOM_CENTER,
+          autoClose: 2000,
+          theme: "colored",
+        });
       }
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].name === name) {
           isInvalid = true;
+          toast.error(`${name} déjà existant`, {
+            position: toast.POSITION.BOTTOM_CENTER,
+            autoClose: 2000,
+            theme: "colored",
+          });
+          this.newTodo = "";
         }
       }
-      return isInvalid
+      return isInvalid;
     },
 
     uuid() {
@@ -409,9 +436,9 @@ export default {
       if (window.confirm('Are you sure you want to export and download your data ?')) {
         let filename = prompt('Enter the name of the export file.', 'todos')
         const jsonData = {
-          todos:this.todos,
-          tags:this.tags,
-          language:this.$i18n.locale,
+          todos: this.todos,
+          tags: this.tags,
+          language: this.$i18n.locale,
         }
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
@@ -532,6 +559,15 @@ i {
 }
 
 /* color */
+:root {
+  --dark: hsl(0, 0%, 24%);
+  --success: hsl(160, 82%, 45%);
+  --primary: hsl(200, 80%, 60%);
+  --danger: hsl(348, 100%, 61%);
+  --warning: hsl(50, 80%, 60%);
+  --epic: hsl(270, 80%, 60%);
+  --legendary: hsl(20, 80%, 60%);
+}
 
 .primary {
   color: hsl(200, 80%, 60%);
@@ -546,7 +582,7 @@ i {
 }
 
 .success {
-  color: hsl(141, 71%, 48%);
+  color: rgb(21, 207, 145);
 }
 
 .legendary {
@@ -555,5 +591,35 @@ i {
 
 .epic {
   color: hsl(270, 80%, 60%);
+}
+
+/* overrride toastify class */
+.Toastify__toast-theme--colored.Toastify__toast--success {
+  background: var(--success);
+  color: #3D3D3D;
+  font-family: "Space Grotesk";
+}
+
+.Toastify__toast-theme--colored.Toastify__toast--error {
+  background: var(--danger);
+
+}
+
+/* overrride bulma class */
+.is-success {
+  background: var(--success);
+  color: var(--dark);
+}
+
+.is-info {
+  background: var(--primary);
+}
+
+.has-text-success {
+  color: var(--success) !important;
+}
+
+.has-text-danger {
+  color: var(--danger) !important;
 }
 </style>
