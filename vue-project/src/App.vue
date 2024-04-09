@@ -542,11 +542,11 @@ i {
 }
 
 .danger {
-  color: hsl(0, 80%, 60%);
+  color: hsl(348, 100%, 61%);
 }
 
 .success {
-  color: hsl(120, 80%, 60%);
+  color: hsl(141, 71%, 48%);
 }
 
 .legendary {

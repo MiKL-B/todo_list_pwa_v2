@@ -10,12 +10,13 @@
                     <span>Filters</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="All" class="fa-regular fa-file" @action="setFilter(FILTER_ALL)" />
-                    <NavItem name="Today" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
-                    <NavItem name="Important" class="fa-solid fa-triangle-exclamation"
+                    <NavItem :name="$t('all')" class="fa-regular fa-file" @action="setFilter(FILTER_ALL)" />
+                    <NavItem :name="$t('today')" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
+                    <NavItem :name="$t('important')" class="fa-solid fa-triangle-exclamation"
                         @action="setFilter(FILTER_IMPORTANT)" />
-                    <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
-                    <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter(FILTER_UNCOMPLETED)" />
+                    <NavItem :name="$t('completed')" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
+                    <NavItem :name="$t('uncompleted')" class="fa-regular fa-circle"
+                        @action="setFilter(FILTER_UNCOMPLETED)" />
                     <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color"
                         class="fa-solid fa-tag" @action="setFilter(tag.name)" />
                 </ul>
@@ -26,43 +27,44 @@
                     <span>Actions</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Mark all as completed" class="fa-solid fa-circle-check"
+                    <NavItem :name="$t('mark_all_as_completed')" class="fa-solid fa-circle-check"
                         @action="markAllAsCompleted" />
-                    <NavItem name="Mark all as uncompleted" class="fa-solid fa-circle" @action="markAllAsUncompleted" />
-                    <NavItem name="Clear all completed" class="fa-solid fa-broom" @action="deleteAllTodos" />
+                    <NavItem :name="$t('mark_all_as_uncompleted')" class="fa-solid fa-circle"
+                        @action="markAllAsUncompleted" />
+                    <NavItem :name="$t('clear_all_completed')" class="fa-solid fa-broom" @action="deleteAllTodos" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-solid fa-tags"></i>
                     </span>
-                    <span>Tags</span>
+                    <span>{{ $t('tags') }}</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Tag list" class="fa-solid fa-tag" @action="changeTab('Tags')" />
+                    <NavItem :name="$t('taglist')" class="fa-solid fa-tag" @action="changeTab('Tags')" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-regular fa-file-code"></i>
                     </span>
-                    <span>JSON</span>
+                    <span>{{ $t('json') }}</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem name="Export" class="fa-solid fa-file-export" @action="exportJSON" />
-                    <NavItem name="Import" class="fa-solid fa-file-import" @action="importJSON" />
+                    <NavItem :name="$t('export')" class="fa-solid fa-file-export" @action="exportJSON" />
+                    <NavItem :name="$t('import')" class="fa-solid fa-file-import" @action="importJSON" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-solid fa-gear"></i>
                     </span>
-                    <span>Settings</span>
+                    <span>{{ $t('settings') }}</span>
                 </p>
                 <ul class="menu-list">
                     <div class="language-item">
-                     
-                        <NavItem name="Language" class="fa-solid fa-language"/>
+
+                        <NavItem :name="$t('language')" class="fa-solid fa-language" />
                         <div class="select">
                             <select v-model="language" @change="setLanguage">
-                                <option v-for="language in languages" :value="language">{{ language }}</option>
+                                <option v-for="language in languages" :value="language">{{ this.$t(language) }}</option>
                             </select>
                         </div>
                     </div>
@@ -81,13 +83,13 @@ export default {
     },
     data() {
         return {
-            FILTER_ALL:1,
-            FILTER_TODAY:2,
-            FILTER_COMPLETED:3,
-            FILTER_UNCOMPLETED:4,
-            FILTER_IMPORTANT:5,
+            FILTER_ALL: 1,
+            FILTER_TODAY: 2,
+            FILTER_COMPLETED: 3,
+            FILTER_UNCOMPLETED: 4,
+            FILTER_IMPORTANT: 5,
             language: "",
-            languages: ['en', 'fr'],
+            languages: ['en','fr'],
             visibleNavbar: false,
         }
     },

@@ -2,11 +2,11 @@
  <div class="field has-addons">
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
-                placeholder="Add a new tag..." @keydown="handleEnterKeyTag"
+                :placeholder="$t('tag_input_placeholder')" @keydown="handleEnterKeyTag"
                 :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
-            <button id="button" class="button is-success" @click="addTag">Submit</button>
+            <button id="button" class="button is-success" @click="addTag">{{$t('submit')}}</button>
         </div>
     </div>
 
