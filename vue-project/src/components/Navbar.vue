@@ -13,7 +13,7 @@
                     <NavItem name="All" class="fa-regular fa-file" @action="setFilter(FILTER_ALL)" />
                     <NavItem name="Today" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
                     <NavItem name="Important" class="fa-solid fa-triangle-exclamation"
-                        @action="setFilter('Important')" />
+                        @action="setFilter(FILTER_IMPORTANT)" />
                     <NavItem name="Completed" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
                     <NavItem name="Uncompleted" class="fa-regular fa-circle" @action="setFilter(FILTER_UNCOMPLETED)" />
                     <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color"
