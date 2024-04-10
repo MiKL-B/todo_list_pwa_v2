@@ -2,12 +2,10 @@
     <div class="card card-todo mb-2 p-2">
         <div class="card-top">
             <div class="card-top-left">
-
-                <span class="icon mx-1 is-size-5" :class="todo.completed ? 'has-text-success' : ''">
-                    <i class="fa-regular fa-circle-check" :class="todo.completed ? 'fa-circle-check' : 'fa-circle'"
-                        @click="markAsCompleted(todo)"></i>
+                <span class="icon mx-1 is-size-5" :class="checkboxColor">
+                    <i class="fa-regular fa-circle-check" :class="checkboxClass" @click="changeState(todo)"></i>
                 </span>
-    
+
                 <div class="card-info ml-2">
                     <span class="priority" v-if="todo.priority == 1">
                         <i class="fa-solid fa-exclamation has-text-danger"></i>
@@ -19,10 +17,13 @@
 
             <div class=" is-size-5">
                 <span class="icon mr-1">
-                    <i class="fa-solid fa-info" @click="readTodo(todo.index, todo)"></i>
+                    <i class="fa-solid fa-info" @click="readTodo(todo)"></i>
+                </span>
+                <span class="icon mx-1" v-if="tags.length > 0">
+                    <i class="fa-solid fa-tag" @click="editTodoTags(todo)"></i>
                 </span>
                 <span class="icon mx-1">
-                    <i class="fa-solid fa-pen" @click="editTodo(todo.index, todo)"></i>
+                    <i class="fa-solid fa-pen" @click="editTodo(todo)"></i>
                 </span>
                 <span class="icon has-text-danger ml-1">
                     <i class="fa-regular fa-trash-can" @click="deleteTodo(todo.index)"></i>
@@ -32,9 +33,9 @@
         <div class="card-bottom" v-if="todo.tags.length > 0">
             <span v-for="tag in todo.tags" :key="tag.index" class="tag mx-1">
                 <i class="fa-solid fa-tag" :class="tag.color"></i>
-                <span>{{tag.name}}</span>
+                <span>{{ tag.name }}</span>
             </span>
-        </div>      
+        </div>
     </div>
 </template>
 
@@ -43,25 +44,44 @@
 export default {
     name: "TodoItem",
     props: {
-        todo:
-        {
+        todo: {
             type: Object,
             required: true,
         },
+        tags:{
+            type:Array,
+            required:true,
+        },
+        checkboxColor: {
+            type: String,
+            required: true,
+        },
+        checkboxClass: {
+            type: String,
+            required: true,
+        }
     },
-    emits: ['mark', 'read', 'edit', 'delete'],
+    emits: ['mark', 'read', 'edit','edit-todo-tags', 'delete', 'change-state'],
+
     methods: {
+        
         markAsCompleted(todo) {
             this.$emit('mark', todo)
         },
-        readTodo(index, todo) {
-            this.$emit('read', [index, todo])
+        readTodo(todo) {
+            this.$emit('read', todo)
         },
-        editTodo(index, todo) {
-            this.$emit('edit', [index, todo])
+        editTodo(todo) {
+            this.$emit('edit', todo)
+        },
+        editTodoTags(todo){
+            this.$emit('edit-todo-tags',todo)
         },
         deleteTodo(index) {
             this.$emit('delete', index)
+        },
+        changeState(todo) {
+            this.$emit('change-state', todo)
         }
     }
 }
@@ -74,10 +94,11 @@ export default {
     justify-content: space-between;
 
 }
-.card-todo{
+
+.card-todo {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows:repeat(auto,0.5fr);
+    grid-template-rows: repeat(auto, 0.5fr);
 }
 
 
@@ -85,15 +106,18 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width:100%;
+    width: 100%;
 }
-.card-top-left{
-    display:flex;
+
+.card-top-left {
+    display: flex;
     align-items: center;
 }
-.card-bottom{
-    display:flex;
+
+.card-bottom {
+    display: flex;
 }
+
 .card-info {
     width: 170px;
     padding: 1rem 0;
@@ -113,5 +137,4 @@ export default {
     gap: 2px;
     align-items: center;
 }
-
 </style>

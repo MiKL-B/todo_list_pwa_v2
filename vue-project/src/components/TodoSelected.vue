@@ -19,23 +19,6 @@
                     {{ $t('is_important') }}
                 </label>
             </div>
-            <label class="label" v-if="readonly == false && tags.length > 0">{{ $t('tags') }}</label>
-            <div class="field has-addons" v-if="readonly == false && tags.length > 0">
-                <div class="control is-expanded">
-                    <div class="select is-fullwidth">
-
-                        <select v-model="selectedTodoTag">
-                            <option v-for="tag in tags" :key="tag.index" :value="tag">
-                                {{ tag.name }}
-                            </option>
-                        </select>
-                        
-                    </div>
-                </div>
-                <div class="control">
-                    <button class="button is-info" @click="addTodoTag">{{$t('add')}}</button>
-                </div>
-            </div>
             <div class="cta" v-if="readonly == false">
                 <button id="bt_save" class="button is-success" :disabled="selectedTodo.name == ''"
                     @click="saveTodo(selectedTodo.index, selectedTodo)">{{ $t('save') }}</button>
@@ -53,11 +36,6 @@ export default {
     components: {
         Modal, Field
     },
-    data() {
-        return {
-            selectedTodoTag: {}
-        }
-    },
     props: {
         selectedTodo: {
             type: Object,
@@ -71,12 +49,8 @@ export default {
             type: Boolean,
             required: true,
         },
-        tags: {
-            type: Array,
-            required: true,
-        },
     },
-    emits: ['toggle', 'save', 'important', 'add-todo-tag'],
+    emits: ['toggle', 'save', 'important'],
     methods: {
         toggleModal() {
             this.$emit('toggle')
@@ -87,9 +61,6 @@ export default {
         saveTodo(index, todo) {
             this.$emit('save', [index, todo])
         },
-        addTodoTag() {
-            this.$emit('add-todo-tag', this.selectedTodoTag)
-        }
     }
 }
 </script>

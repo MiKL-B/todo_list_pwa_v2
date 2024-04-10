@@ -20,11 +20,13 @@
       </div>
       <div v-if="todos.length > 0">
         <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
-          @delete="deleteTodo(todo.index)" @mark="markAsCompleted(todo)" @read="readTodo(todo)" />
+          @delete="deleteTodo(todo.index)" @read="readTodo(todo)" @change-state="changeState(todo)"
+          :checkboxColor="checkboxColor(todo)" :checkboxClass="checkboxClass(todo)"
+          @edit-todo-tags="editTodoTags(todo)" :tags="tags" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
-        <h2 class="subtitle">Empty todos</h2>
+        <h2 class="subtitle">{{ $t('empty_todos') }}</h2>
       </div>
     </div>
     <!-- tags -->
@@ -36,19 +38,23 @@
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
-        <h2 class="subtitle">Empty tags</h2>
+        <h2 class="subtitle">{{$t('empty_tags')}}</h2>
       </div>
     </div>
   </div>
 
   <!-- todo modal -->
   <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
-    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" :tags="tags"
-    @add-todo-tag="addTodoTag" />
+    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" />
+  <!-- todo tags modal -->
+  <TodoTagsSelected :selectedTodo="selectedTodo" :visible="visibleModalTodoTags" @toggle="toggleModalTodoTags"
+    :tags="tags" @add-todo-tag="addTodoTag" @delete-todo-tag="deleteTodoTag" />
 
   <!-- tag modal -->
   <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
     @save="saveTag(selectedTag.index, selectedTag)" />
+
+
 
 </template>
 
@@ -57,23 +63,25 @@ import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
 
-
 // Todos
 import TodoInput from '@/components/TodoInput.vue';
 import TodoItem from '@/components/TodoItem.vue';
 import TodoSelected from '@/components/TodoSelected.vue';
+import TodoTagsSelected from '@/components/TodoTagsSelected.vue';
 
 // Tags
 import TagInput from '@/components/TagInput.vue';
 import TagItem from '@/components/TagItem.vue';
 import TagSelected from '@/components/TagSelected.vue';
+
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+
 export default {
   name: "App",
   components: {
     Field, Modal, Navbar
-    , TodoInput, TodoItem, TodoSelected
+    , TodoInput, TodoItem, TodoSelected, TodoTagsSelected
     , TagInput, TagItem, TagSelected
   },
   data() {
@@ -85,6 +93,7 @@ export default {
       currentFilter: this.FILTER_ALL,
       activeTab: "Todos",
       visibleModal: false,
+      visibleModalTodoTags: false,
       todos: JSON.parse(localStorage.getItem("todos")) || [],
       // tags
       newTag: "",
@@ -98,12 +107,6 @@ export default {
       FILTER_COMPLETED: 3,
       FILTER_UNCOMPLETED: 4,
       FILTER_IMPORTANT: 5,
-
-      notification: false,
-      notificationColor: "",
-      notificationMessage: '',
-      timeoutId: null,
-      elapsedTime: 0,
     }
   },
   mounted() {
@@ -172,6 +175,39 @@ export default {
     },
   },
   methods: {
+    checkboxColor(todo) {
+      let color = "";
+      if (todo.completed === false) {
+        color = "";
+      } else if (todo.completed === null) {
+        color = "has-text-warning";
+      } else {
+        color = "has-text-success";
+      }
+      return color;
+    },
+    checkboxClass(todo) {
+      let category = "";
+      if (todo.completed === false) {
+        category = "fa-circle";
+      } else if (todo.completed === null) {
+        category = "fa-hourglass";
+      } else {
+        category = "fa-circle-check";
+      }
+      return category;
+    },
+    changeState(todo) {
+      if (todo.completed === false) {
+        todo.completed = null;
+      } else if (todo.completed === null) {
+        todo.completed = true;
+      } else {
+        todo.completed = false;
+      }
+      todo.updatedDate = this.getDate();
+      this.saveLocalStorage();
+    },
     setFilter(type) {
       this.currentFilter = type;
       this.changeTab('Todos')
@@ -198,8 +234,11 @@ export default {
         autoClose: 2000,
         theme: "colored",
       });
-
       this.newTodo = "";
+    },
+    editTodoTags(todo) {
+      this.visibleModalTodoTags = true;
+      this.selectedTodo = { ...todo };
     },
     addTodoTag(selectedTodoTag) {
       if (selectedTodoTag.name == undefined) {
@@ -212,9 +251,18 @@ export default {
       }
       if (this.selectedTodo.tags.length < 3) {
         this.selectedTodo.tags.push(selectedTodoTag)
-        this.visibleModal = false;
+        this.visibleModalTodoTags = false;
         this.saveLocalStorage()
       }
+    },
+    deleteTodoTag(selectedTodoTagDelete) {
+      for (let i = 0; i < this.selectedTodo.tags.length; i++){
+        if (this.selectedTodo.tags[i].index === selectedTodoTagDelete.index){
+          this.selectedTodo.tags.splice(i, 1)
+        }
+      }
+      this.visibleModalTodoTags = false;
+      this.saveLocalStorage()
     },
 
     displayTodo(todo) {
@@ -228,11 +276,6 @@ export default {
     editTodo(todo) {
       this.readonly = false;
       this.displayTodo(todo);
-    },
-    markAsCompleted(todo) {
-      todo.completed = !todo.completed
-      todo.updatedDate = this.getDate()
-      this.saveLocalStorage();
     },
     markAllAsUncompleted() {
       for (let i = 0; i < this.todos.length; i++) {
@@ -425,6 +468,9 @@ export default {
     },
     toggleModal() {
       this.visibleModal = !this.visibleModal
+    },
+    toggleModalTodoTags() {
+      this.visibleModalTodoTags = !this.visibleModalTodoTags
     },
     toggleModalTag() {
       this.visibleModalTag = !this.visibleModalTag
@@ -621,5 +667,9 @@ i {
 
 .has-text-danger {
   color: var(--danger) !important;
+}
+
+.has-text-warning {
+  color: var(--warning) !important;
 }
 </style>

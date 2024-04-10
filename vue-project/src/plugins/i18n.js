@@ -6,11 +6,13 @@ const messages = {
             todolist:"Todo list",
             todoremaining:"Task(s) to do:",
             todo_input_placeholder:"Add a new todo...",
+            empty_todos:"Empty todos",
 
             // tags
             taglist:"Tag list",
             tags:"Tags",
             tag_input_placeholder:"Add a new tag...",
+            empty_tags:"Empty tags",
 
             // filter
             filter:"Filter:",
@@ -39,6 +41,7 @@ const messages = {
 
             // actions
             add:"Add",
+            delete:"Delete",
             save:"Save",
             submit:"Submit",
             mark_all_as_completed:"Mark all as completed",
@@ -57,11 +60,13 @@ const messages = {
             todolist:"Liste de tâches",
             todoremaining:"Tâche(s) à faire:",
             todo_input_placeholder:"Ajouter une nouvelle tâche...",
+            empty_todos:"Liste de tâches vide",
 
             // tags
             taglist:"Liste de tags",
             tags:"Tags",
             tag_input_placeholder:"Ajouter un nouveau tag...",
+            empty_tags:"Liste de tags vide",
 
             // filter
             filter:"Filtre:",
@@ -90,6 +95,7 @@ const messages = {
 
             // actions
             add:"Ajouter",
+            delete:"Supprimer",
             save:"Sauvegarder",
             submit:"Envoyer",
             mark_all_as_completed:"Marquer tout comme terminé",
