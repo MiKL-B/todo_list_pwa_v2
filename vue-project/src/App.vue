@@ -215,6 +215,8 @@ export default {
 
     // #region TODO
     addTodo() {
+      console.log("DEBUG_BEGIN","addTodo");
+      
       if (this.invalidName(this.newTodo)) return;
 
       let todo = {
@@ -235,6 +237,7 @@ export default {
         theme: "colored",
       });
       this.newTodo = "";
+      console.log("DEBUG_END","addTodo");
     },
     editTodoTags(todo) {
       this.visibleModalTodoTags = true;
@@ -326,7 +329,9 @@ export default {
       this.saveLocalStorage()
     },
     saveLocalStorage() {
+      console.log("DEBUG_BEGIN","saveLocalStorage");
       localStorage.setItem("todos", JSON.stringify(this.todos));
+      console.log("DEBUG_END","saveLocalStorage");
     },
     handleEnterKeyTodo(event) {
       if (event.key == 'Enter') {
