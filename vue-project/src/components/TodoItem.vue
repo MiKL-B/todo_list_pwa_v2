@@ -29,6 +29,7 @@
                     <i class="fa-regular fa-trash-can" @click="deleteTodo(todo.index)"></i>
                 </span>
             </div>
+            
         </div>
         <div class="card-bottom" v-if="todo.tags.length > 0">
             <span v-for="tag in todo.tags" :key="tag.index" class="tag mx-1">

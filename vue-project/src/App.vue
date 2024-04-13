@@ -21,8 +21,8 @@
       <div v-if="todos.length > 0">
         <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
           @delete="deleteTodo(todo.index)" @read="readTodo(todo)" @change-state="changeState(todo)"
-          :checkboxColor="checkboxColor(todo)" :checkboxClass="checkboxClass(todo)"
-          @edit-todo-tags="editTodoTags(todo)" :tags="tags" />
+          :checkboxColor="checkboxColor(todo)" :checkboxClass="checkboxClass(todo)" @edit-todo-tags="editTodoTags(todo)"
+          :tags="tags" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
@@ -38,7 +38,7 @@
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
-        <h2 class="subtitle">{{$t('empty_tags')}}</h2>
+        <h2 class="subtitle">{{ $t('empty_tags') }}</h2>
       </div>
     </div>
   </div>
@@ -74,9 +74,11 @@ import TagInput from '@/components/TagInput.vue';
 import TagItem from '@/components/TagItem.vue';
 import TagSelected from '@/components/TagSelected.vue';
 
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-
+import { createUuid } from '@/uuid.js';
+import { getCurrentDate } from '@/date.js';
+import { emptyName, existingName } from '@/verification.js';
+import { notification } from '@/notification.js';
+import { getLocalStorage, saveLocalStorage } from './localstorage';
 export default {
   name: "App",
   components: {
@@ -94,12 +96,12 @@ export default {
       activeTab: "Todos",
       visibleModal: false,
       visibleModalTodoTags: false,
-      todos: JSON.parse(localStorage.getItem("todos")) || [],
+      todos: getLocalStorage("todos","array"),
       // tags
       newTag: "",
       selectedTag: {},
       visibleModalTag: false,
-      tags: JSON.parse(localStorage.getItem('tags')) || [],
+      tags: getLocalStorage("tags","array"),
       colors: ['primary', 'success', 'danger', 'warning', 'epic', 'legendary'],
       // filter
       FILTER_ALL: 1,
@@ -205,8 +207,8 @@ export default {
       } else {
         todo.completed = false;
       }
-      todo.updatedDate = this.getDate();
-      this.saveLocalStorage();
+      todo.updatedDate = getCurrentDate();
+      saveLocalStorage("todos",this.todos,"array");
     },
     setFilter(type) {
       this.currentFilter = type;
@@ -214,30 +216,37 @@ export default {
     },
 
     // #region TODO
+    handleEnterKeyTodo(event) {
+      if (event.key == 'Enter') {
+        this.addTodo()
+      }
+    },
     addTodo() {
-      console.log("DEBUG_BEGIN","addTodo");
-      
-      if (this.invalidName(this.newTodo)) return;
+      console.log("DEBUG_BEGIN", "addTodo");
+
+      if (emptyName(this.newTodo)) {
+        return;
+      }
+      if (existingName(this.todos, this.newTodo)) {
+        this.newTodo = "";
+        return;
+      }
 
       let todo = {
-        index: this.uuid(),
+        index: createUuid(),
         name: this.newTodo,
-        createdDate: this.getDate(),
-        updatedDate: this.getDate(),
+        createdDate: getCurrentDate(),
+        updatedDate: getCurrentDate(),
         description: "",
         completed: false,
         priority: false,
         tags: [],
       }
       this.todos.push(todo);
-      this.saveLocalStorage()
-      toast.success(`Tâche ${this.newTodo} bien ajoutée`, {
-        position: toast.POSITION.BOTTOM_CENTER,
-        autoClose: 2000,
-        theme: "colored",
-      });
+      saveLocalStorage("todos",this.todos,"array");
+      notification("success",`Tâche ${this.newTodo} bien ajoutée`)
       this.newTodo = "";
-      console.log("DEBUG_END","addTodo");
+      console.log("DEBUG_END", "addTodo");
     },
     editTodoTags(todo) {
       this.visibleModalTodoTags = true;
@@ -255,17 +264,17 @@ export default {
       if (this.selectedTodo.tags.length < 3) {
         this.selectedTodo.tags.push(selectedTodoTag)
         this.visibleModalTodoTags = false;
-        this.saveLocalStorage()
+        saveLocalStorage("todos",this.todos,"array");
       }
     },
     deleteTodoTag(selectedTodoTagDelete) {
-      for (let i = 0; i < this.selectedTodo.tags.length; i++){
-        if (this.selectedTodo.tags[i].index === selectedTodoTagDelete.index){
+      for (let i = 0; i < this.selectedTodo.tags.length; i++) {
+        if (this.selectedTodo.tags[i].index === selectedTodoTagDelete.index) {
           this.selectedTodo.tags.splice(i, 1)
         }
       }
       this.visibleModalTodoTags = false;
-      this.saveLocalStorage()
+      saveLocalStorage("todos",this.todos,"array");
     },
 
     displayTodo(todo) {
@@ -283,21 +292,21 @@ export default {
     markAllAsUncompleted() {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = false;
-        this.todos[i].updatedDate = this.getDate();
+        this.todos[i].updatedDate = getCurrentDate();
       }
-      this.saveLocalStorage()
+      saveLocalStorage("todos",this.todos,"array");
     },
     markAllAsCompleted() {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = true;
-        this.todos[i].updatedDate = this.getDate();
+        this.todos[i].updatedDate = getCurrentDate();
       }
-      this.saveLocalStorage()
+      saveLocalStorage("todos",this.todos,"array");
     },
     markAsImportant(todo) {
       todo.priority = !todo.priority;
-      todo.updatedDate = this.getDate();
-      this.saveLocalStorage()
+      todo.updatedDate = getCurrentDate();
+      saveLocalStorage("todos",this.todos,"array");
     },
     deleteTodo(index) {
       for (let i = 0; i < this.todos.length; i++) {
@@ -305,7 +314,7 @@ export default {
           this.todos.splice(i, 1)
         }
       }
-      this.saveLocalStorage();
+      saveLocalStorage("todos",this.todos,"array");
     },
     deleteAllItems() {
       var i = 0;
@@ -316,54 +325,44 @@ export default {
           ++i;
         }
       }
-      this.saveLocalStorage();
+      saveLocalStorage("todos",this.todos,"array");
     },
     saveTodo(index, todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === index) {
           this.todos[i] = { ...todo };
-          this.todos[i].updatedDate = this.getDate()
+          this.todos[i].updatedDate = getCurrentDate()
         }
       }
       this.visibleModal = false;
-      this.saveLocalStorage()
+      saveLocalStorage("todos",this.todos,"array");
     },
-    saveLocalStorage() {
-      console.log("DEBUG_BEGIN","saveLocalStorage");
-      localStorage.setItem("todos", JSON.stringify(this.todos));
-      console.log("DEBUG_END","saveLocalStorage");
-    },
-    handleEnterKeyTodo(event) {
-      if (event.key == 'Enter') {
-        this.addTodo()
-      }
-    },
+
+
     // #endregion
 
     // #region TAGS
     addTag() {
-      if (this.newTag === "") {
+      if (emptyName(this.newTag)) {
         return;
       }
 
-      for (let i = 0; i < this.tags.length; i++) {
-        if (this.tags[i].name === this.newTag) {
-          this.newTag = "";
-          return;
-        }
+      if (existingName(this.tags, this.newTag)) {
+        this.newTag = "";
+        return;
       }
       let indexRandomColor = Math.floor(Math.random() * this.colors.length)
       let randomColor = this.colors[indexRandomColor]
       let tag = {
-        index: this.uuid(),
+        index: createUuid(),
         name: this.newTag,
-        createdDate: this.getDate(),
-        updatedDate: this.getDate(),
+        createdDate: getCurrentDate(),
+        updatedDate: getCurrentDate(),
         color: randomColor,
       }
       this.newTag = "";
       this.tags.push(tag);
-      this.saveLocalStorageTag();
+      saveLocalStorage("tags",this.tags,"array");
     },
     displayTag(tag) {
       this.visibleModalTag = true;
@@ -384,7 +383,7 @@ export default {
         for (let j = 0; j < this.todos[i].tags.length; j++) {
           if (this.todos[i].tags[j].index === index) {
             this.todos[i].tags.splice(j, 1);
-            this.saveLocalStorage()
+            saveLocalStorage("todos",this.todos,"array");
             break;
           }
         }
@@ -393,7 +392,7 @@ export default {
       const globalTagIndex = this.tags.findIndex(tag => tag.index === index);
       if (globalTagIndex !== -1) {
         this.tags.splice(globalTagIndex, 1);
-        this.saveLocalStorageTag();
+        saveLocalStorage("tags",this.tags,"array");
       }
     },
 
@@ -404,7 +403,7 @@ export default {
           console.log(tag)
           this.tags[i] = { ...tag };
           this.tags[i].color = tag.color;
-          this.tags[i].updatedDate = this.getDate()
+          this.tags[i].updatedDate = getCurrentDate()
 
           for (let j = 0; j < this.todos.length; j++) {
             for (let k = 0; k < this.todos[j].tags.length; k++) {
@@ -417,57 +416,19 @@ export default {
         }
       }
       this.visibleModalTag = false;
-      this.saveLocalStorageTag()
-      this.saveLocalStorage()
+      saveLocalStorage("tags",this.tags,"array");
+      saveLocalStorage("todos",this.todos,"array");
     },
     handleEnterKeyTag(event) {
       if (event.key == 'Enter') {
         this.addTag()
       }
     },
-    saveLocalStorageTag() {
-      localStorage.setItem('tags', JSON.stringify(this.tags));
-    },
+   
     // #endregion
 
     // #region MISCELLANEOUS
-    invalidName(name) {
-      let isInvalid = false;
-      if (name == '') {
-        isInvalid = true;
-        toast.error("Nom vide", {
-          position: toast.POSITION.BOTTOM_CENTER,
-          autoClose: 2000,
-          theme: "colored",
-        });
-      }
-      for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].name === name) {
-          isInvalid = true;
-          toast.error(`${name} déjà existant`, {
-            position: toast.POSITION.BOTTOM_CENTER,
-            autoClose: 2000,
-            theme: "colored",
-          });
-          this.newTodo = "";
-        }
-      }
-      return isInvalid;
-    },
 
-    uuid() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-          v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    },
-    getDate() {
-      let currentTime = new Date().toLocaleTimeString();
-      let currentDay = new Date().toLocaleDateString();
-      let date = currentDay + " - " + currentTime;
-      return date;
-    },
     changeTab(tab) {
       this.activeTab = tab;
     },
@@ -517,7 +478,7 @@ export default {
           this.todos = jsonData.todos
           this.tags = jsonData.tags
           this.$i18n.locale = jsonData.language
-          this.saveLocalStorage()
+          saveLocalStorage("todos",this.todos,"array");
         } catch (error) {
           console.error("Erreur lors de la lecture du fichier JSON : " + error);
         }
