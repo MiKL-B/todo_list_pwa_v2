@@ -2,7 +2,7 @@
 
   <div class="nav">
     <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
-      @uncompleted="markAllAsUncompleted" @delete="deleteAllItems" @export="exportJSON" @import="openFileInput"
+      @uncompleted="markAllAsUncompleted" @delete="deleteAllCompleted" @export="exportJSON" @import="openFileInput"
       @language="setLanguage">
     </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
@@ -19,10 +19,8 @@
         <label class="label">{{ $t('filter') }} {{ currentTextFilter }}</label>
       </div>
       <div v-if="todos.length > 0">
-        <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo(todo)"
-          @delete="deleteTodo(todo.index)" @read="readTodo(todo)" @change-state="changeState(todo)"
-          :checkboxColor="checkboxColor(todo)" :checkboxClass="checkboxClass(todo)" @edit-todo-tags="editTodoTags(todo)"
-          :tags="tags" />
+        <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo" @delete="deleteTodo"
+          @read="readTodo" @change-state="changeState" @delete-todo-tag="deleteTodoTag" :tags="tags" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
@@ -33,8 +31,8 @@
     <div v-else>
       <TagInput @add="addTag" v-model="newTag" @handlekey="handleEnterKeyTag" />
       <div v-if="tags.length > 0">
-        <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag(tag)" @read="readTag(tag)"
-          @delete="deleteTag(tag.index)" />
+        <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag" @read="readTag"
+          @delete="deleteTag" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
@@ -45,14 +43,11 @@
 
   <!-- todo modal -->
   <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
-    @save="saveTodo(selectedTodo.index, selectedTodo)" @important="markAsImportant(selectedTodo)" />
-  <!-- todo tags modal -->
-  <TodoTagsSelected :selectedTodo="selectedTodo" :visible="visibleModalTodoTags" @toggle="toggleModalTodoTags"
-    :tags="tags" @add-todo-tag="addTodoTag" @delete-todo-tag="deleteTodoTag" />
+    @save="saveTodo" @important="markAsImportant" @completed="markAsCompleted" @assign="assignTag" :tags="tags" />
 
   <!-- tag modal -->
   <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
-    @save="saveTag(selectedTag.index, selectedTag)" />
+    @save="saveTag" />
 
 
 
@@ -67,7 +62,6 @@ import Navbar from '@/components/Navbar.vue';
 import TodoInput from '@/components/TodoInput.vue';
 import TodoItem from '@/components/TodoItem.vue';
 import TodoSelected from '@/components/TodoSelected.vue';
-import TodoTagsSelected from '@/components/TodoTagsSelected.vue';
 
 // Tags
 import TagInput from '@/components/TagInput.vue';
@@ -79,11 +73,12 @@ import { getCurrentDate } from '@/date.js';
 import { emptyName, existingName } from '@/verification.js';
 import { notification } from '@/notification.js';
 import { getLocalStorage, saveLocalStorage } from './localstorage';
+import { getRandomColor } from './random';
 export default {
   name: "App",
   components: {
     Field, Modal, Navbar
-    , TodoInput, TodoItem, TodoSelected, TodoTagsSelected
+    , TodoInput, TodoItem, TodoSelected
     , TagInput, TagItem, TagSelected
   },
   data() {
@@ -95,14 +90,12 @@ export default {
       currentFilter: this.FILTER_ALL,
       activeTab: "Todos",
       visibleModal: false,
-      visibleModalTodoTags: false,
-      todos: getLocalStorage("todos","array"),
+      todos: getLocalStorage("todos", "array"),
       // tags
       newTag: "",
-      selectedTag: {},
       visibleModalTag: false,
-      tags: getLocalStorage("tags","array"),
-      colors: ['primary', 'success', 'danger', 'warning', 'epic', 'legendary'],
+      tags: getLocalStorage("tags", "array"),
+      selectedTag: {},
       // filter
       FILTER_ALL: 1,
       FILTER_TODAY: 2,
@@ -177,38 +170,22 @@ export default {
     },
   },
   methods: {
-    checkboxColor(todo) {
-      let color = "";
-      if (todo.completed === false) {
-        color = "";
-      } else if (todo.completed === null) {
-        color = "has-text-warning";
-      } else {
-        color = "has-text-success";
-      }
-      return color;
-    },
-    checkboxClass(todo) {
-      let category = "";
-      if (todo.completed === false) {
-        category = "fa-circle";
-      } else if (todo.completed === null) {
-        category = "fa-hourglass";
-      } else {
-        category = "fa-circle-check";
-      }
-      return category;
-    },
     changeState(todo) {
       if (todo.completed === false) {
         todo.completed = null;
+        todo.colorState = "has-text-warning";
+        todo.iconState = "fa-hourglass";
       } else if (todo.completed === null) {
         todo.completed = true;
+        todo.colorState = "has-text-success";
+        todo.iconState = "fa-circle-check";
       } else {
         todo.completed = false;
+        todo.colorState = "";
+        todo.iconState = "fa-circle";
       }
       todo.updatedDate = getCurrentDate();
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
     setFilter(type) {
       this.currentFilter = type;
@@ -239,84 +216,97 @@ export default {
         updatedDate: getCurrentDate(),
         description: "",
         completed: false,
+        colorState: "",
+        iconState: "fa-circle",
         priority: false,
         tags: [],
       }
       this.todos.push(todo);
-      saveLocalStorage("todos",this.todos,"array");
-      notification("success",`Tâche ${this.newTodo} bien ajoutée`)
+      saveLocalStorage("todos", this.todos, "array");
+      notification("success", `Tâche ${this.newTodo} bien ajoutée`)
       this.newTodo = "";
       console.log("DEBUG_END", "addTodo");
     },
-    editTodoTags(todo) {
-      this.visibleModalTodoTags = true;
-      this.selectedTodo = { ...todo };
-    },
-    addTodoTag(selectedTodoTag) {
-      if (selectedTodoTag.name == undefined) {
+
+    assignTag(selectedTag, todo) {
+      if (selectedTag.name == undefined) {
         return;
       }
-      for (let i = 0; i < this.selectedTodo.tags.length; i++) {
-        if (this.selectedTodo.tags[i].name === selectedTodoTag.name) {
+      for (let i = 0; i < todo.tags.length; i++) {
+        if (todo.tags[i].name === selectedTag.name) {
           return;
         }
       }
-      if (this.selectedTodo.tags.length < 3) {
-        this.selectedTodo.tags.push(selectedTodoTag)
-        this.visibleModalTodoTags = false;
-        saveLocalStorage("todos",this.todos,"array");
+      if (todo.tags.length < 3) {
+        todo.tags.push(selectedTag)
+        saveLocalStorage("todos", this.todos, "array");
       }
-    },
-    deleteTodoTag(selectedTodoTagDelete) {
-      for (let i = 0; i < this.selectedTodo.tags.length; i++) {
-        if (this.selectedTodo.tags[i].index === selectedTodoTagDelete.index) {
-          this.selectedTodo.tags.splice(i, 1)
-        }
-      }
-      this.visibleModalTodoTags = false;
-      saveLocalStorage("todos",this.todos,"array");
     },
 
-    displayTodo(todo) {
+    deleteTodoTag(selectedTodoTagDelete) {
+      for (let i = 0; i < this.todos.length; i++) {
+        for (let j = 0; j < this.todos[i].tags.length; j++) {
+          if (this.todos[i].tags[j].index === selectedTodoTagDelete.index) {
+            this.todos[i].tags.splice(j, 1)
+          }
+        }
+      }
+
+
+      saveLocalStorage("todos", this.todos, "array");
+    },
+
+    readTodo(todo) {
+      this.readonly = true;
       this.visibleModal = true;
       this.selectedTodo = { ...todo };
     },
-    readTodo(todo) {
-      this.readonly = true;
-      this.displayTodo(todo);
-    },
     editTodo(todo) {
       this.readonly = false;
-      this.displayTodo(todo);
+      this.visibleModal = true;
+      this.selectedTodo = { ...todo };
     },
     markAllAsUncompleted() {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = false;
         this.todos[i].updatedDate = getCurrentDate();
       }
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
     markAllAsCompleted() {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = true;
         this.todos[i].updatedDate = getCurrentDate();
       }
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
     markAsImportant(todo) {
       todo.priority = !todo.priority;
       todo.updatedDate = getCurrentDate();
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
-    deleteTodo(index) {
+    markAsCompleted(todo) {
+      todo.completed = !todo.completed;
+      if (todo.completed) {
+        todo.colorState = "has-text-success";
+        todo.iconState = "fa-circle-check";
+      }
+      else {
+        todo.colorState = "";
+        todo.iconState = "fa-circle";
+      }
+      saveLocalStorage("todos", this.todos, "array");
+    },
+    deleteTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].index === index) {
+        if (this.todos[i].index === todo.index) {
           this.todos.splice(i, 1)
         }
       }
-      saveLocalStorage("todos",this.todos,"array");
+      notification("success", `Tâche ${todo.name} bien supprimée`)
+      saveLocalStorage("todos", this.todos, "array");
     },
-    deleteAllItems() {
+    deleteAllCompleted() {
       var i = 0;
       while (i < this.todos.length) {
         if (this.todos[i].completed === true) {
@@ -325,17 +315,17 @@ export default {
           ++i;
         }
       }
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
-    saveTodo(index, todo) {
+    saveTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].index === index) {
+        if (this.todos[i].index === todo.index) {
           this.todos[i] = { ...todo };
           this.todos[i].updatedDate = getCurrentDate()
         }
       }
       this.visibleModal = false;
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("todos", this.todos, "array");
     },
 
 
@@ -351,63 +341,63 @@ export default {
         this.newTag = "";
         return;
       }
-      let indexRandomColor = Math.floor(Math.random() * this.colors.length)
-      let randomColor = this.colors[indexRandomColor]
+
       let tag = {
         index: createUuid(),
         name: this.newTag,
         createdDate: getCurrentDate(),
         updatedDate: getCurrentDate(),
-        color: randomColor,
+        color: getRandomColor(),
+        icon: "fa-solid fa-tag",
       }
-      this.newTag = "";
       this.tags.push(tag);
-      saveLocalStorage("tags",this.tags,"array");
-    },
-    displayTag(tag) {
-      this.visibleModalTag = true;
-      this.selectedTag = { ...tag };
-      this.selectedTag.color = tag.color;
+      notification("success", `Tag ${this.newTag} bien ajouté`)
+      this.newTag = "";
+      saveLocalStorage("tags", this.tags, "array");
     },
     readTag(tag) {
       this.readonly = true;
-      this.displayTag(tag);
+      this.visibleModalTag = true;
+      this.selectedTag = { ...tag };
     },
     editTag(tag) {
       this.readonly = false;
-      this.displayTag(tag)
+      this.visibleModalTag = true;
+      this.selectedTag = { ...tag };
     },
-    deleteTag(index) {
+    deleteTag(tag) {
       // delete tag in todo
       for (let i = 0; i < this.todos.length; i++) {
         for (let j = 0; j < this.todos[i].tags.length; j++) {
-          if (this.todos[i].tags[j].index === index) {
+          if (this.todos[i].tags[j].index === tag.index) {
             this.todos[i].tags.splice(j, 1);
-            saveLocalStorage("todos",this.todos,"array");
+            saveLocalStorage("todos", this.todos, "array");
             break;
           }
         }
       }
       // delete right tag
-      const globalTagIndex = this.tags.findIndex(tag => tag.index === index);
+      const globalTagIndex = this.tags.findIndex(el => el.index === tag.index);
       if (globalTagIndex !== -1) {
         this.tags.splice(globalTagIndex, 1);
-        saveLocalStorage("tags",this.tags,"array");
+        saveLocalStorage("tags", this.tags, "array");
       }
+      notification("success", `Tag ${tag.name} bien supprimé`)
     },
 
-    saveTag(index, tag) {
-      // update date in tag list and in todo
+    saveTag(tag) {
+      // update tag in tag list and in todo
       for (let i = 0; i < this.tags.length; i++) {
-        if (this.tags[i].index === index) {
-          console.log(tag)
+        if (this.tags[i].index === tag.index) {
           this.tags[i] = { ...tag };
+          this.tags[i].icon = tag.icon;
           this.tags[i].color = tag.color;
           this.tags[i].updatedDate = getCurrentDate()
 
           for (let j = 0; j < this.todos.length; j++) {
             for (let k = 0; k < this.todos[j].tags.length; k++) {
               if (this.todos[j].tags[k].index === this.tags[i].index) {
+                this.todos[j].tags[k].icon = tag.icon;
                 this.todos[j].tags[k].color = tag.color;
                 this.todos[j].tags[k].name = tag.name;
               }
@@ -416,15 +406,15 @@ export default {
         }
       }
       this.visibleModalTag = false;
-      saveLocalStorage("tags",this.tags,"array");
-      saveLocalStorage("todos",this.todos,"array");
+      saveLocalStorage("tags", this.tags, "array");
+      saveLocalStorage("todos", this.todos, "array");
     },
     handleEnterKeyTag(event) {
       if (event.key == 'Enter') {
         this.addTag()
       }
     },
-   
+
     // #endregion
 
     // #region MISCELLANEOUS
@@ -435,9 +425,7 @@ export default {
     toggleModal() {
       this.visibleModal = !this.visibleModal
     },
-    toggleModalTodoTags() {
-      this.visibleModalTodoTags = !this.visibleModalTodoTags
-    },
+
     toggleModalTag() {
       this.visibleModalTag = !this.visibleModalTag
     },
@@ -478,7 +466,7 @@ export default {
           this.todos = jsonData.todos
           this.tags = jsonData.tags
           this.$i18n.locale = jsonData.language
-          saveLocalStorage("todos",this.todos,"array");
+          saveLocalStorage("todos", this.todos, "array");
         } catch (error) {
           console.error("Erreur lors de la lecture du fichier JSON : " + error);
         }
@@ -488,7 +476,7 @@ export default {
     // #endregion
     setLanguage(language) {
       this.$i18n.locale = language;
-      localStorage.setItem("language", language);
+      saveLocalStorage("language", language);
     }
   }
 }
@@ -578,31 +566,36 @@ i {
   --danger: hsl(348, 100%, 61%);
   --warning: hsl(50, 80%, 60%);
   --epic: hsl(270, 80%, 60%);
+  --pink: hsl(313, 80%, 60%);
   --legendary: hsl(20, 80%, 60%);
 }
 
 .primary {
-  color: hsl(200, 80%, 60%);
+  color: var(--primary);
 }
 
 .warning {
-  color: hsl(50, 80%, 60%);
+  color: var(--warning);
 }
 
 .danger {
-  color: hsl(348, 100%, 61%);
+  color: var(--danger);
 }
 
 .success {
-  color: rgb(21, 207, 145);
+  color: var(--success);
 }
 
 .legendary {
-  color: hsl(20, 80%, 60%);
+  color: var(--legendary);
 }
 
 .epic {
-  color: hsl(270, 80%, 60%);
+  color: var(--epic);
+}
+
+.pink {
+  color: var(--pink);
 }
 
 /* overrride toastify class */

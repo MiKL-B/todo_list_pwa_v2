@@ -8,20 +8,31 @@
             <label class="label">{{ $t('state') }}</label>
             <div class="field">
                 <label class="checkbox">
-                    <input type="checkbox" v-model="selectedTodo.completed" :disabled="readonly" />
+                    <input type="checkbox" v-model="selectedTodo.completed"  @click="markAsCompleted" :disabled="readonly" />
                     {{ $t('is_completed') }}
                 </label>
             </div>
             <div class="field">
                 <label class="checkbox">
                     <input type="checkbox" v-model="selectedTodo.priority" :disabled="readonly"
-                        @click="markAsImportant(selectedTodo)" />
+                        @click="markAsImportant" />
                     {{ $t('is_important') }}
                 </label>
             </div>
+            <label class="label" v-if="readonly == false">{{ $t('tags') }}</label>
+            <div class="field has-addons" v-if="readonly == false">
+                <div class="control is-expanded">
+                    <div class="select is-fullwidth">
+                        <select v-model="selectedTag">
+                            <option v-for="tag in tags" :key="tag.index" :value="tag">{{ tag.name }}</option>  
+                        </select>
+                    </div>
+                    <button class="button" @click="assignTag(selectedTag)">assign</button>
+                </div>
+            </div>
             <div class="cta" v-if="readonly == false">
                 <button id="bt_save" class="button is-success" :disabled="selectedTodo.name == ''"
-                    @click="saveTodo(selectedTodo.index, selectedTodo)">{{ $t('save') }}</button>
+                    @click="saveTodo">{{ $t('save') }}</button>
             </div>
         </template>
     </Modal>
@@ -36,6 +47,11 @@ export default {
     components: {
         Modal, Field
     },
+    data(){
+        return{
+            selectedTag:{}
+        }
+    },
     props: {
         selectedTodo: {
             type: Object,
@@ -49,17 +65,27 @@ export default {
             type: Boolean,
             required: true,
         },
+        tags:{
+            type:Array,
+            required:true,
+        }
     },
-    emits: ['toggle', 'save', 'important'],
+    emits: ['toggle', 'save', 'important','completed','assign'],
     methods: {
         toggleModal() {
             this.$emit('toggle')
         },
-        markAsImportant(todo) {
-            this.$emit('important', todo)
+        markAsImportant() {
+            this.$emit('important', this.selectedTodo)
         },
-        saveTodo(index, todo) {
-            this.$emit('save', [index, todo])
+        markAsCompleted(){
+            this.$emit('completed',this.selectedTodo)
+        },
+        saveTodo() {
+            this.$emit('save', this.selectedTodo)
+        },
+        assignTag(){
+             this.$emit('assign',this.selectedTag,this.selectedTodo)
         },
     }
 }

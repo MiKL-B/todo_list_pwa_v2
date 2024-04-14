@@ -17,8 +17,8 @@
                     <NavItem :name="$t('completed')" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
                     <NavItem :name="$t('uncompleted')" class="fa-regular fa-circle"
                         @action="setFilter(FILTER_UNCOMPLETED)" />
-                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="tag.color"
-                        class="fa-solid fa-tag" @action="setFilter(tag.name)" />
+                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" 
+                        :class="[tag.icon, tag.color]" @action="setFilter(tag.name)" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">

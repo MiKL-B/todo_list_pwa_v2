@@ -1,8 +1,8 @@
 <template>
     <div class="card mb-2 p-2">
         <div class="card-left">
-            <span class="icon mx-1 is-size-5" :class="tag.color" >
-                <i class="fa-solid fa-tag"></i>
+            <span class="icon mx-1 is-size-5" :class="tag.color">
+                <i :class="tag.icon"></i>
             </span>
 
             <div class="card-info ml-2">
@@ -11,13 +11,13 @@
         </div>
         <div class="card-right is-size-5">
             <span class="icon mr-1">
-                <i class="fa-solid fa-info" @click="readTag(tag)"></i>
+                <i class="fa-solid fa-info" @click="readTag"></i>
             </span>
             <span class="icon mx-1">
-                <i class="fa-solid fa-pen" @click="editTag(tag)"></i>
+                <i class="fa-solid fa-pen" @click="editTag"></i>
             </span>
             <span class="icon has-text-danger ml-1">
-                <i class="fa-regular fa-trash-can" @click="deleteTag(tag.index)"></i>
+                <i class="fa-regular fa-trash-can" @click="deleteTag"></i>
             </span>
         </div>
     </div>
@@ -35,14 +35,14 @@ export default {
     },
     emits: ['read', 'edit', 'delete'],
     methods: {
-        readTag(tag) {
-            this.$emit('read',tag)
+        readTag() {
+            this.$emit('read',this.tag)
         },
-        editTag(tag) {
-            this.$emit('edit',tag)
+        editTag() {
+            this.$emit('edit',this.tag)
         },
-        deleteTag(index) {
-            this.$emit('delete', index)
+        deleteTag() {
+            this.$emit('delete', this.tag)
         }
     }
 }

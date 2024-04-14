@@ -11,6 +11,7 @@ const messages = {
             // tags
             taglist:"Tag list",
             tags:"Tags",
+            tag:"Tag",
             tag_input_placeholder:"Add a new tag...",
             empty_tags:"Empty tags",
 
@@ -31,6 +32,7 @@ const messages = {
             is_completed:"Completed",
             is_important:"Important",
             enter_text_placeholder:"Enter text here...",
+            // colors
             color:"Color",
             blue:"Blue",
             green:"Green",
@@ -38,6 +40,18 @@ const messages = {
             red:"Red",
             purple:"Purple",
             orange:"Orange",
+            pink:"Pink",
+            // icons
+            icon:"Icon",
+            phone:"Phone",
+            coffee_time:"Coffee time",
+            meeting:"Meeting",
+            personal:"Personal",
+            tools:"Tools",
+            cook:"Cook",
+            envelope:"Envelop",
+            poo:"Poo",
+            travel:"Travel",
 
             // actions
             add:"Add",
@@ -64,6 +78,7 @@ const messages = {
 
             // tags
             taglist:"Liste de tags",
+            tag:"Tag",
             tags:"Tags",
             tag_input_placeholder:"Ajouter un nouveau tag...",
             empty_tags:"Liste de tags vide",
@@ -85,6 +100,7 @@ const messages = {
             is_completed:"Complétée",
             is_important:"Important",
             enter_text_placeholder:"Votre texte ici...",
+            // colors
             color:"Couleur",
             blue:"Bleu",
             green:"Vert",
@@ -92,6 +108,18 @@ const messages = {
             red:"Rouge",
             purple:"Violet",
             orange:"Orange",
+            pink:"Rose",
+            // icons
+            icon:"Icône",
+            phone:"Téléphone",
+            coffee_time:"Pause café",
+            meeting:"Rencontre",
+            personal:"Personnel",
+            tools:"Outils",
+            cook:"Cuisine",
+            envelope:"Courrier",
+            poo:"Caca",
+            travel:"Voyage",
 
             // actions
             add:"Ajouter",
