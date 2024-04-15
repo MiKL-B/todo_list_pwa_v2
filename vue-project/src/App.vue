@@ -12,15 +12,16 @@
   <div class="container px-4">
     <!-- todos -->
     <div v-if="activeTab === 'Todos'">
-      <TodoInput @add="addTodo" v-model="newTodo" @handlekey="handleEnterKeyTodo" />
-      <div class="filters">
-        <label class="label">{{ $t('todoremaining') }} {{ remaining }} {{ todos.length > 0 ? ' / ' + todos.length : ''
-          }}</label>
-        <label class="label">{{ $t('filter') }} {{ currentTextFilter }}</label>
-      </div>
+      <Insert @add="addTodo" v-model="newTodo" />
       <div v-if="todos.length > 0">
-        <TodoItem v-for="todo in filteredTodos" :key="todo.index" :todo="todo" @edit="editTodo" @delete="deleteTodo"
-          @read="readTodo" @change-state="changeState" @delete-todo-tag="deleteTodoTag" :tags="tags" />
+        <div class="filters">
+          <label class="label">{{ $t('todoremaining') }} {{ remaining }}</label>
+          <label class="label">{{ $t('filter') }} {{ textFilter }}</label>
+        </div>
+        <Todo v-for="todo in filteredTodos" :key="todo.index" :todo="todo" :selectedTodo="selectedTodo" :tags="tags"
+          @edit="editTodo" @read="readTodo" @delete="deleteTodo" @delete-todo-tag="deleteTodoTag"
+          @change-state="changeState" @save="saveTodo" @important="markAsImportant" @completed="markAsCompleted"
+          @assign="assignTag" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
@@ -29,10 +30,10 @@
     </div>
     <!-- tags -->
     <div v-else>
-      <TagInput @add="addTag" v-model="newTag" @handlekey="handleEnterKeyTag" />
+      <Insert @add="addTag" v-model="newTag" />
       <div v-if="tags.length > 0">
-        <TagItem v-for="tag in tags" :key="tag.index" :tag="tag" @edit="editTag" @read="readTag"
-          @delete="deleteTag" />
+        <Tag v-for="tag in tags" :key="tag.index" :tag="tag" :selectedTag="selectedTag" @edit="editTag" @read="readTag"
+          @delete="deleteTag" @save="saveTag" />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
@@ -41,166 +42,100 @@
     </div>
   </div>
 
-  <!-- todo modal -->
-  <TodoSelected :selectedTodo="selectedTodo" :visible="visibleModal" :readonly="readonly" @toggle="toggleModal"
-    @save="saveTodo" @important="markAsImportant" @completed="markAsCompleted" @assign="assignTag" :tags="tags" />
-
-  <!-- tag modal -->
-  <TagSelected :selectedTag="selectedTag" :visible="visibleModalTag" :readonly="readonly" @toggle="toggleModalTag"
-    @save="saveTag" />
-
-
-
 </template>
 
 <script>
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
+import Insert from '@/components/Insert.vue';
 
 // Todos
-import TodoInput from '@/components/TodoInput.vue';
-import TodoItem from '@/components/TodoItem.vue';
-import TodoSelected from '@/components/TodoSelected.vue';
+import Todo from '@/components/Todo.vue';
 
 // Tags
-import TagInput from '@/components/TagInput.vue';
-import TagItem from '@/components/TagItem.vue';
-import TagSelected from '@/components/TagSelected.vue';
+import Tag from '@/components/Tag.vue';
 
 import { createUuid } from '@/uuid.js';
 import { getCurrentDate } from '@/date.js';
 import { emptyName, existingName } from '@/verification.js';
 import { notification } from '@/notification.js';
-import { getLocalStorage, saveLocalStorage } from './localstorage';
-import { getRandomColor } from './random';
+import { getLocalStorage, saveLocalStorage } from '@/localstorage.js';
+import { getRandomColor } from '@/random.js';
 export default {
   name: "App",
-  components: {
-    Field, Modal, Navbar
-    , TodoInput, TodoItem, TodoSelected
-    , TagInput, TagItem, TagSelected
-  },
+  components: { Field, Modal, Navbar, Insert, Todo, Tag },
   data() {
     return {
       // todos
       newTodo: "",
       selectedTodo: {},
-      readonly: false,
-      currentFilter: this.FILTER_ALL,
-      activeTab: "Todos",
-      visibleModal: false,
       todos: getLocalStorage("todos", "array"),
       // tags
       newTag: "",
-      visibleModalTag: false,
-      tags: getLocalStorage("tags", "array"),
       selectedTag: {},
+      tags: getLocalStorage("tags", "array"),
       // filter
+      textFilter: this.currentFilter,
+      currentFilter: this.FILTER_ALL,
+      remaining: "",
       FILTER_ALL: 1,
       FILTER_TODAY: 2,
       FILTER_COMPLETED: 3,
       FILTER_UNCOMPLETED: 4,
       FILTER_IMPORTANT: 5,
+      // miscellaneous
+      activeTab: "Todos",
     }
   },
   mounted() {
+    // filter
     this.setFilter(this.FILTER_ALL)
-    // language
+    // miscellaneous
     let localLanguage = localStorage.getItem('language');
     if (localLanguage == null) {
       localLanguage = 'en';
     }
-    this.$i18n.locale = localLanguage;
-    localStorage.setItem("language", localLanguage)
+    this.setLanguage(localLanguage)
   },
   computed: {
-    remaining() {
-      return this.todos.filter((todo) => !todo.completed).length;
-    },
-    currentTextFilter() {
-      let text = "";
-      switch (this.currentFilter) {
-        case this.FILTER_ALL:
-          text = this.$t('all');
-          break;
-        case this.FILTER_TODAY:
-          text = this.$t('today');
-          break;
-        case this.FILTER_COMPLETED:
-          text = this.$t('completed');
-          break;
-        case this.FILTER_UNCOMPLETED:
-          text = this.$t('uncompleted');
-          break;
-        case this.FILTER_IMPORTANT:
-          text = this.$t('important');
-          break;
-        default:
-          text = this.currentFilter;
-      }
-      return text;
-    },
     filteredTodos() {
       let filteredList = this.todos;
       switch (this.currentFilter) {
         case this.FILTER_ALL:
+          this.textFilter = this.$t('all');
           filteredList = this.todos;
           break;
         case this.FILTER_TODAY:
+          this.textFilter = this.$t('today');
           let currentDay = new Date().toLocaleDateString();
           filteredList = this.todos.filter(todo => todo.createdDate.includes(currentDay));
           break;
         case this.FILTER_COMPLETED:
+          this.textFilter = this.$t('completed');
           filteredList = this.todos.filter(todo => todo.completed);
           break;
         case this.FILTER_UNCOMPLETED:
+          this.textFilter = this.$t('uncompleted');
           filteredList = this.todos.filter(todo => !todo.completed);
           break;
         case this.FILTER_IMPORTANT:
+          this.textFilter = this.$t('important');
           filteredList = this.todos.filter(todo => todo.priority === true);
           break;
         default:
+          this.textFilter = this.currentFilter;
           filteredList = this.todos.filter(todo => {
             return todo.tags.some(tag => tag.name === this.currentFilter);
           });
       }
-
+      this.remaining = filteredList.length;
       return filteredList
     },
   },
   methods: {
-    changeState(todo) {
-      if (todo.completed === false) {
-        todo.completed = null;
-        todo.colorState = "has-text-warning";
-        todo.iconState = "fa-hourglass";
-      } else if (todo.completed === null) {
-        todo.completed = true;
-        todo.colorState = "has-text-success";
-        todo.iconState = "fa-circle-check";
-      } else {
-        todo.completed = false;
-        todo.colorState = "";
-        todo.iconState = "fa-circle";
-      }
-      todo.updatedDate = getCurrentDate();
-      saveLocalStorage("todos", this.todos, "array");
-    },
-    setFilter(type) {
-      this.currentFilter = type;
-      this.changeTab('Todos')
-    },
-
-    // #region TODO
-    handleEnterKeyTodo(event) {
-      if (event.key == 'Enter') {
-        this.addTodo()
-      }
-    },
+    // todos
     addTodo() {
-      console.log("DEBUG_BEGIN", "addTodo");
-
       if (emptyName(this.newTodo)) {
         return;
       }
@@ -225,66 +160,68 @@ export default {
       saveLocalStorage("todos", this.todos, "array");
       notification("success", `Tâche ${this.newTodo} bien ajoutée`)
       this.newTodo = "";
-      console.log("DEBUG_END", "addTodo");
     },
 
-    assignTag(selectedTag, todo) {
-      if (selectedTag.name == undefined) {
+    changeState(todo) {
+      if (todo.completed === false) {
+        todo.completed = null;
+        todo.colorState = "has-text-warning";
+        todo.iconState = "fa-hourglass";
+      } else if (todo.completed === null) {
+        todo.completed = true;
+        todo.colorState = "has-text-success";
+        todo.iconState = "fa-circle-check";
+      } else {
+        todo.completed = false;
+        todo.colorState = "";
+        todo.iconState = "fa-circle";
+      }
+      todo.updatedDate = getCurrentDate();
+      saveLocalStorage("todos", this.todos, "array");
+    },
+
+    assignTag(tag, todo) {
+      if (tag.name == undefined) {
         return;
       }
       for (let i = 0; i < todo.tags.length; i++) {
-        if (todo.tags[i].name === selectedTag.name) {
+        if (todo.tags[i].name === tag.name) {
           return;
         }
       }
       if (todo.tags.length < 3) {
-        todo.tags.push(selectedTag)
+        todo.tags.push(tag)
         saveLocalStorage("todos", this.todos, "array");
       }
     },
 
-    deleteTodoTag(selectedTodoTagDelete) {
+    deleteTodoTag(tag, todo) {
       for (let i = 0; i < this.todos.length; i++) {
-        for (let j = 0; j < this.todos[i].tags.length; j++) {
-          if (this.todos[i].tags[j].index === selectedTodoTagDelete.index) {
-            this.todos[i].tags.splice(j, 1)
+        if (this.todos[i].index === todo.index) {
+          for (let j = 0; j < this.todos[i].tags.length; j++) {
+            if (this.todos[i].tags[j].index === tag.index) {
+              this.todos[i].tags.splice(j, 1);
+            }
           }
         }
       }
-
-
       saveLocalStorage("todos", this.todos, "array");
     },
 
     readTodo(todo) {
-      this.readonly = true;
-      this.visibleModal = true;
       this.selectedTodo = { ...todo };
     },
+
     editTodo(todo) {
-      this.readonly = false;
-      this.visibleModal = true;
       this.selectedTodo = { ...todo };
     },
-    markAllAsUncompleted() {
-      for (let i = 0; i < this.todos.length; i++) {
-        this.todos[i].completed = false;
-        this.todos[i].updatedDate = getCurrentDate();
-      }
-      saveLocalStorage("todos", this.todos, "array");
-    },
-    markAllAsCompleted() {
-      for (let i = 0; i < this.todos.length; i++) {
-        this.todos[i].completed = true;
-        this.todos[i].updatedDate = getCurrentDate();
-      }
-      saveLocalStorage("todos", this.todos, "array");
-    },
+    
     markAsImportant(todo) {
       todo.priority = !todo.priority;
       todo.updatedDate = getCurrentDate();
       saveLocalStorage("todos", this.todos, "array");
     },
+
     markAsCompleted(todo) {
       todo.completed = !todo.completed;
       if (todo.completed) {
@@ -297,6 +234,7 @@ export default {
       }
       saveLocalStorage("todos", this.todos, "array");
     },
+
     deleteTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
@@ -306,17 +244,7 @@ export default {
       notification("success", `Tâche ${todo.name} bien supprimée`)
       saveLocalStorage("todos", this.todos, "array");
     },
-    deleteAllCompleted() {
-      var i = 0;
-      while (i < this.todos.length) {
-        if (this.todos[i].completed === true) {
-          this.todos.splice(i, 1);
-        } else {
-          ++i;
-        }
-      }
-      saveLocalStorage("todos", this.todos, "array");
-    },
+    
     saveTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
@@ -324,14 +252,10 @@ export default {
           this.todos[i].updatedDate = getCurrentDate()
         }
       }
-      this.visibleModal = false;
       saveLocalStorage("todos", this.todos, "array");
     },
 
-
-    // #endregion
-
-    // #region TAGS
+    // tags
     addTag() {
       if (emptyName(this.newTag)) {
         return;
@@ -355,16 +279,15 @@ export default {
       this.newTag = "";
       saveLocalStorage("tags", this.tags, "array");
     },
+
     readTag(tag) {
-      this.readonly = true;
-      this.visibleModalTag = true;
       this.selectedTag = { ...tag };
     },
+
     editTag(tag) {
-      this.readonly = false;
-      this.visibleModalTag = true;
       this.selectedTag = { ...tag };
     },
+
     deleteTag(tag) {
       // delete tag in todo
       for (let i = 0; i < this.todos.length; i++) {
@@ -405,33 +328,49 @@ export default {
           }
         }
       }
-      this.visibleModalTag = false;
       saveLocalStorage("tags", this.tags, "array");
       saveLocalStorage("todos", this.todos, "array");
     },
-    handleEnterKeyTag(event) {
-      if (event.key == 'Enter') {
-        this.addTag()
-      }
+
+    // filter
+    setFilter(type) {
+      this.currentFilter = type;
+      this.changeTab('Todos')
     },
 
-    // #endregion
+    markAllAsUncompleted() {
+      for (let i = 0; i < this.todos.length; i++) {
+        this.todos[i].completed = false;
+        this.todos[i].updatedDate = getCurrentDate();
+      }
+      saveLocalStorage("todos", this.todos, "array");
+    },
 
-    // #region MISCELLANEOUS
+    markAllAsCompleted() {
+      for (let i = 0; i < this.todos.length; i++) {
+        this.todos[i].completed = true;
+        this.todos[i].updatedDate = getCurrentDate();
+      }
+      saveLocalStorage("todos", this.todos, "array");
+    },
 
+    deleteAllCompleted() {
+      var i = 0;
+      while (i < this.todos.length) {
+        if (this.todos[i].completed === true) {
+          this.todos.splice(i, 1);
+        } else {
+          ++i;
+        }
+      }
+      saveLocalStorage("todos", this.todos, "array");
+    },
+
+    // miscellaneous
     changeTab(tab) {
       this.activeTab = tab;
     },
-    toggleModal() {
-      this.visibleModal = !this.visibleModal
-    },
 
-    toggleModalTag() {
-      this.visibleModalTag = !this.visibleModalTag
-    },
-    // #endregion
-
-    // #region EXPORT
     exportJSON() {
       if (window.confirm('Are you sure you want to export and download your data ?')) {
         let filename = prompt('Enter the name of the export file.', 'todos')
@@ -450,9 +389,11 @@ export default {
         document.body.removeChild(downloadLink);
       }
     },
+
     openFileInput() {
       this.$refs.fileInput.click();
     },
+
     importJSON() {
       const file = event.target.files[0];
       if (!file) {
@@ -473,7 +414,7 @@ export default {
       };
       reader.readAsText(file);
     },
-    // #endregion
+
     setLanguage(language) {
       this.$i18n.locale = language;
       saveLocalStorage("language", language);

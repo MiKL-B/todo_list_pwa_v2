@@ -4,15 +4,13 @@ const messages = {
         en:{
             // todos
             todolist:"Todo list",
-            todoremaining:"Task(s) to do:",
-            todo_input_placeholder:"Add a new todo...",
+            todoremaining:"Task(s):",
             empty_todos:"Empty todos",
 
             // tags
             taglist:"Tag list",
             tags:"Tags",
             tag:"Tag",
-            tag_input_placeholder:"Add a new tag...",
             empty_tags:"Empty tags",
 
             // filter
@@ -72,15 +70,13 @@ const messages = {
         fr:{
             // todos
             todolist:"Liste de tâches",
-            todoremaining:"Tâche(s) à faire:",
-            todo_input_placeholder:"Ajouter une nouvelle tâche...",
+            todoremaining:"Tâche(s):",
             empty_todos:"Liste de tâches vide",
 
             // tags
             taglist:"Liste de tags",
             tag:"Tag",
             tags:"Tags",
-            tag_input_placeholder:"Ajouter un nouveau tag...",
             empty_tags:"Liste de tags vide",
 
             // filter

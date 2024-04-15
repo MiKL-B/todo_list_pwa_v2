@@ -1,5 +1,29 @@
 <template>
-    <Modal v-if="visible" @close="toggleModalTag">
+    <!-- tag -->
+    <div class="card mb-2 p-2">
+        <div class="card-left">
+            <span class="icon mx-1 is-size-5" :class="tag.color">
+                <i :class="tag.icon"></i>
+            </span>
+
+            <div class="card-info ml-2">
+                <span class="card-text">{{ tag.name }}</span>
+            </div>
+        </div>
+        <div class="card-right is-size-5">
+            <span class="icon mr-1">
+                <i class="fa-solid fa-info" @click="read"></i>
+            </span>
+            <span class="icon mx-1">
+                <i class="fa-solid fa-pen" @click="edit"></i>
+            </span>
+            <span class="icon has-text-danger ml-1">
+                <i class="fa-regular fa-trash-can" @click="deleteTag"></i>
+            </span>
+        </div>
+    </div>
+    <!-- modal -->
+    <Modal v-if="visible" @close="toggleModal">
         <template v-slot:content>
             <Field :name="$t('name')" v-model="selectedTag.name" :disabled="readonly" />
             <Field :name="$t('createddate')" v-if="readonly" v-model="selectedTag.createdDate" :disabled="readonly" />
@@ -46,49 +70,66 @@
                 </div>
             </div>
             <div class="cta" v-if="readonly == false">
-                <button id="bt_save" class="button is-success" :disabled="selectedTag.name == ''"
-                    @click="saveTag">{{ $t('save') }}</button>
+                <button id="bt_save" class="button is-success" :disabled="selectedTag.name == ''" @click="save">{{
+                    $t('save') }}</button>
             </div>
         </template>
     </Modal>
-
 </template>
 
 <script>
 import Modal from '@/components/Modal.vue';
 import Field from '@/components/Field.vue';
+
 export default {
-    name: "TagSelected",
-    components: {
-        Modal, Field
-    },
-    data() {
-        return {
-        
-        }
-    },
+    name: "TagItem",
+    components: { Modal, Field },
     props: {
+        tag:{
+            type: Object,
+            required: true,
+        },
         selectedTag:{
             type:Object,
             required:true,
         },
-        visible: {
-            type: Boolean,
-            required: true,
-        },
-        readonly: {
-            type: Boolean,
-            required: true,
-        },
     },
-    emits: ['toggle', 'save', 'add-tag-color'],
+    emits: ['read', 'edit', 'delete','save'],
+    data(){
+        return{
+            visible:false,
+            readonly:false,
+        }
+    },
     methods: {
-        toggleModalTag() {
-            this.$emit('toggle')
+        read() {
+            this.$emit('read', this.tag);
+            this.visible = true;
+            this.readonly = true;
         },
-        saveTag() {
-            this.$emit('save',this.selectedTag)
+        edit() {
+            this.$emit('edit', this.tag)
+            this.visible = true;
+            this.readonly = false;
+        },
+        deleteTag() {
+            this.$emit('delete', this.tag)
+        },
+        toggleModal() {
+            this.visible = !this.visible
+        },
+        save() {
+            this.$emit('save',this.selectedTag);
+            this.visible = false;
         },
     }
 }
 </script>
+
+<style scoped>
+.card-left,
+.card-right {
+    display: flex;
+    align-items: center;
+}
+</style>

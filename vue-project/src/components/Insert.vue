@@ -2,11 +2,11 @@
  <div class="field has-addons">
         <div class="control is-expanded">
             <input id="input" class="input" type="text"
-                :placeholder="$t('tag_input_placeholder')" @keydown="handleEnterKeyTag"
+                :placeholder="$t('enter_text_placeholder')" @keydown="handleKey"
                 :value="modelValue" @input="onInput" />
         </div>
         <div class="control">
-            <button id="button" class="button is-success" @click="addTag">{{$t('submit')}}</button>
+            <button id="button" class="button is-success" @click="add">{{$t('submit')}}</button>
         </div>
     </div>
 
@@ -14,7 +14,7 @@
 
 <script>
 export default {
-    name:"TagInput",
+    name:"Insert",
     props: {
         modelValue: {
             type: String,
@@ -22,13 +22,13 @@ export default {
         }
     },
     methods: {
-        addTag() {
+        add() {
             this.$emit('add')
         },
 
-        handleEnterKeyTag(event) {
+        handleKey(event) {
             if (event.key == 'Enter') {
-                this.$emit('handlekey', event)
+                this.add();
             }
         },
         onInput(event) {
