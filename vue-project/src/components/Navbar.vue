@@ -17,8 +17,8 @@
                     <NavItem :name="$t('completed')" class="fa-solid fa-check" @action="setFilter(FILTER_COMPLETED)" />
                     <NavItem :name="$t('uncompleted')" class="fa-regular fa-circle"
                         @action="setFilter(FILTER_UNCOMPLETED)" />
-                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" 
-                        :class="[tag.icon, tag.color]" @action="setFilter(tag.name)" />
+                    <NavItem v-for="tag in tags" :key="tag.index" :name="tag.name" :class="[tag.icon, tag.color]"
+                        @action="setFilter(tag.name)" />
                 </ul>
                 <p class="menu-label">
                     <span class="icon">
@@ -60,7 +60,6 @@
                 </p>
                 <ul class="menu-list">
                     <div class="language-item">
-
                         <NavItem :name="$t('language')" class="fa-solid fa-language" />
                         <div class="select">
                             <select v-model="language" @change="setLanguage">
@@ -89,14 +88,13 @@ export default {
             FILTER_UNCOMPLETED: 4,
             FILTER_IMPORTANT: 5,
             language: "",
-            languages: ['en','fr'],
+            languages: ['en', 'fr'],
             visibleNavbar: false,
         }
     },
     props: ['tags'],
     emits: ['filter', 'tab', 'completed', 'uncompleted', 'delete', 'export', 'import', 'language'],
     methods: {
-        // todos
         setFilter(type) {
             this.$emit('filter', type)
             this.visibleNavbar = false;
@@ -124,7 +122,6 @@ export default {
             this.$emit('export');
             this.visibleNavbar = false;
         },
-
         importJSON() {
             this.$emit('import');
             this.visibleNavbar = false;
@@ -139,5 +136,17 @@ export default {
 <style>
 .language-item {
     display: flex;
+}
+.navbar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+.burger {
+  position: relative;
+  z-index: 3;
 }
 </style>

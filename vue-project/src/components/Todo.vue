@@ -59,15 +59,20 @@
                     {{ $t('is_important') }}
                 </label>
             </div>
-            <label class="label" v-if="readonly == false">{{ $t('tags') }}</label>
-            <div class="field has-addons" v-if="readonly == false">
-                <div class="control is-expanded">
-                    <div class="select is-fullwidth">
-                        <select v-model="selectedTag">
-                            <option v-for="tag in tags" :key="tag.index" :value="tag">{{ tag.name }}</option>  
-                        </select>
+            <div v-if="tags.length > 0">
+                <label class="label" v-if="readonly == false">{{ $t('tags') }}</label>
+                <div class="field has-addons" v-if="readonly == false">
+                    <div class="control is-expanded has-icons-left">
+                        <div class="select is-fullwidth">
+                            <select v-model="selectedTag">
+                                <option v-for="tag in tags" :key="tag.index" :value="tag">{{ tag.name }}</option>  
+                            </select>
+                        </div>
+                        <div class="icon is-left">
+                            <i :class="[selectedTag.icon, selectedTag.color]"></i>
+                        </div>
+                        <button class="button" @click="assignTag">assign</button>
                     </div>
-                    <button class="button" @click="assignTag">assign</button>
                 </div>
             </div>
             <div class="cta" v-if="readonly == false">

@@ -50,6 +50,8 @@ const messages = {
             envelope:"Envelop",
             poo:"Poo",
             travel:"Travel",
+            octopus:"Octopus",
+            ghost:"Ghost",
 
             // actions
             add:"Add",
@@ -66,6 +68,15 @@ const messages = {
             language:"Language",
             en:"English",
             fr:"French",
+
+            // notification
+            todo_added:"The task is well added",
+            todo_deleted:"The task is well deleted",
+            tag_added:"The tag is well added",
+            tag_deleted:"The tag is welle deleted",
+            empty_todo_name:"Cannot add todo with empty name",
+            empty_tag_name:"Cannot add tag with empty name",
+            exist_name:"The name already exists",
         },
         fr:{
             // todos
@@ -116,6 +127,8 @@ const messages = {
             envelope:"Courrier",
             poo:"Caca",
             travel:"Voyage",
+            octopus:"Poulpe",
+            ghost:"Fantôme",
 
             // actions
             add:"Ajouter",
@@ -132,6 +145,15 @@ const messages = {
             language:"Langue",
             en:"Anglais",
             fr:"Français",
+
+            // notification
+            todo_added:"La tâche est bien ajoutée",
+            todo_deleted:"La tâche est bien supprimée",
+            tag_added:"Le tag est bien ajouté",
+            tag_deleted:"Le tag est bien supprimé",
+            empty_todo_name:"Le nom de la tâche ne peut être vide",
+            empty_tag_name:"Le nom du tag ne peut être vide",
+            exist_name:"Le nom existe déjà",
         }
     }
 }

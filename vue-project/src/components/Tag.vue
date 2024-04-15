@@ -33,12 +33,12 @@
                 <div class="control is-expanded has-icons-left">
                     <div class="select is-fullwidth">
                         <select v-model="selectedTag.color">
-                            <option value="primary">{{ $t('blue') }}</option>
-                            <option value="success">{{ $t('green') }}</option>
-                            <option value="warning">{{ $t('yellow') }}</option>
                             <option value="danger">{{ $t('red') }}</option>
-                            <option value="epic">{{ $t('purple') }}</option>
                             <option value="legendary">{{ $t('orange') }}</option>
+                            <option value="warning">{{ $t('yellow') }}</option>
+                            <option value="success">{{ $t('green') }}</option>
+                            <option value="primary">{{ $t('blue') }}</option>
+                            <option value="epic">{{ $t('purple') }}</option>
                             <option value="pink">{{ $t('pink') }}</option>
                         </select>
                     </div>
@@ -62,6 +62,8 @@
                             <option value="fa-solid fa-envelope">{{ $t('envelope') }}</option>
                             <option value="fa-solid fa-poo">{{ $t('poo') }}</option>
                             <option value="fa-solid fa-plane">{{ $t('travel') }}</option>
+                            <option value="fa-brands fa-octopus-deploy">{{ $t('octopus') }}</option>
+                            <option value="fa-solid fa-ghost">{{ $t('ghost') }}</option>
                         </select>
                     </div>
                     <div class="icon is-left">

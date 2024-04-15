@@ -137,9 +137,11 @@ export default {
     // todos
     addTodo() {
       if (emptyName(this.newTodo)) {
+        notification("error",this.$t('empty_todo_name'))
         return;
       }
       if (existingName(this.todos, this.newTodo)) {
+        notification("error",this.$t('exist_name'))
         this.newTodo = "";
         return;
       }
@@ -158,7 +160,7 @@ export default {
       }
       this.todos.push(todo);
       saveLocalStorage("todos", this.todos, "array");
-      notification("success", `Tâche ${this.newTodo} bien ajoutée`)
+      notification("success", this.$t('todo_added'))
       this.newTodo = "";
     },
 
@@ -241,7 +243,7 @@ export default {
           this.todos.splice(i, 1)
         }
       }
-      notification("success", `Tâche ${todo.name} bien supprimée`)
+      notification("success", this.$t('todo_deleted'))
       saveLocalStorage("todos", this.todos, "array");
     },
     
@@ -258,10 +260,12 @@ export default {
     // tags
     addTag() {
       if (emptyName(this.newTag)) {
+        notification("error",this.$t('empty_tag_name'))
         return;
       }
 
       if (existingName(this.tags, this.newTag)) {
+        notification("error",this.$t('exist_name'))
         this.newTag = "";
         return;
       }
@@ -275,7 +279,7 @@ export default {
         icon: "fa-solid fa-tag",
       }
       this.tags.push(tag);
-      notification("success", `Tag ${this.newTag} bien ajouté`)
+      notification("success", this.$t('tag_added'))
       this.newTag = "";
       saveLocalStorage("tags", this.tags, "array");
     },
@@ -305,7 +309,7 @@ export default {
         this.tags.splice(globalTagIndex, 1);
         saveLocalStorage("tags", this.tags, "array");
       }
-      notification("success", `Tag ${tag.name} bien supprimé`)
+      notification("success", this.$t('tag_deleted'))
     },
 
     saveTag(tag) {
@@ -458,26 +462,10 @@ i {
   justify-content: flex-end
 }
 
-
-
-.burger {
-  position: relative;
-  z-index: 3;
-
-}
-
 .nav {
   display: flex;
   align-items: center;
-}
 
-.navbar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  top: 0;
-  right: 0;
-  z-index: 1;
 }
 
 .filters {
@@ -548,7 +536,7 @@ i {
 
 .Toastify__toast-theme--colored.Toastify__toast--error {
   background: var(--danger);
-
+  font-family: "Space Grotesk";
 }
 
 /* overrride bulma class */

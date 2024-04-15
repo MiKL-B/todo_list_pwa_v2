@@ -25,7 +25,6 @@ export default {
         add() {
             this.$emit('add')
         },
-
         handleKey(event) {
             if (event.key == 'Enter') {
                 this.add();
