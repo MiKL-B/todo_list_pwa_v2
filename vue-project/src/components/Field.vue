@@ -7,7 +7,7 @@
                     :placeholder="$t('enter_text_placeholder')" :disabled="disabled"></textarea>
             </div>
             <div v-else>
-                <input :value="modelValue" @input="onInput" class="input" type="text" :placeholder="$t('enter_text_placeholder')"
+                <input :value="modelValue" @input="onInput"  class="input" :type="type" :placeholder="$t('enter_text_placeholder')"
                     :disabled="disabled" />
             </div>
         </div>
@@ -18,6 +18,7 @@
 <script>
 export default {
     name: "Field",
+
     props: {
         name: {
             type: String,
@@ -41,7 +42,8 @@ export default {
     methods: {
         onInput(event) {
             this.$emit('update:modelValue', event.target.value)
-        }
+        },
+    
     }
 }
 </script>

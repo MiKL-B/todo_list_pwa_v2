@@ -129,7 +129,7 @@ export default {
         setLanguage() {
             this.$emit('language', this.language);
             this.visibleNavbar = false;
-        }
+        },
     }
 }
 </script>
@@ -137,16 +137,18 @@ export default {
 .language-item {
     display: flex;
 }
+
 .navbar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  top: 0;
-  right: 0;
-  z-index: 1;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    top: 0;
+    right: 0;
+    z-index: 1;
 }
+
 .burger {
-  position: relative;
-  z-index: 3;
+    position: relative;
+    z-index: 3;
 }
 </style>

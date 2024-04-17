@@ -41,7 +41,6 @@
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
@@ -57,14 +56,16 @@ import Todo from '@/components/Todo.vue';
 import Tag from '@/components/Tag.vue';
 
 import { createUuid } from '@/uuid.js';
-import { getCurrentDate } from '@/date.js';
+import { getCurrentDate, getDate } from '@/date.js';
 import { emptyName, existingName } from '@/verification.js';
 import { notification } from '@/notification.js';
 import { getLocalStorage, saveLocalStorage } from '@/localstorage.js';
 import { getRandomColor } from '@/random.js';
 export default {
   name: "App",
-  components: { Field, Modal, Navbar, Insert, Todo, Tag },
+  components: {
+    Field, Modal, Navbar, Insert, Todo, Tag
+  },
   data() {
     return {
       // todos
@@ -86,6 +87,7 @@ export default {
       FILTER_IMPORTANT: 5,
       // miscellaneous
       activeTab: "Todos",
+      visible: false,
     }
   },
   mounted() {
@@ -134,14 +136,18 @@ export default {
     },
   },
   methods: {
+
+    toggleModal() {
+      this.visible = !this.visible
+    },
     // todos
     addTodo() {
       if (emptyName(this.newTodo)) {
-        notification("error",this.$t('empty_todo_name'))
+        notification("error", this.$t('empty_todo_name'))
         return;
       }
       if (existingName(this.todos, this.newTodo)) {
-        notification("error",this.$t('exist_name'))
+        notification("error", this.$t('exist_name'))
         this.newTodo = "";
         return;
       }
@@ -151,6 +157,7 @@ export default {
         name: this.newTodo,
         createdDate: getCurrentDate(),
         updatedDate: getCurrentDate(),
+        deadlineDate: getDate(),
         description: "",
         completed: false,
         colorState: "",
@@ -217,7 +224,7 @@ export default {
     editTodo(todo) {
       this.selectedTodo = { ...todo };
     },
-    
+
     markAsImportant(todo) {
       todo.priority = !todo.priority;
       todo.updatedDate = getCurrentDate();
@@ -246,7 +253,7 @@ export default {
       notification("success", this.$t('todo_deleted'))
       saveLocalStorage("todos", this.todos, "array");
     },
-    
+
     saveTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
@@ -260,12 +267,12 @@ export default {
     // tags
     addTag() {
       if (emptyName(this.newTag)) {
-        notification("error",this.$t('empty_tag_name'))
+        notification("error", this.$t('empty_tag_name'))
         return;
       }
 
       if (existingName(this.tags, this.newTag)) {
-        notification("error",this.$t('exist_name'))
+        notification("error", this.$t('exist_name'))
         this.newTag = "";
         return;
       }
@@ -346,6 +353,8 @@ export default {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = false;
         this.todos[i].updatedDate = getCurrentDate();
+        this.todos[i].colorState = "";
+        this.todos[i].iconState = "fa-circle";
       }
       saveLocalStorage("todos", this.todos, "array");
     },
@@ -354,6 +363,8 @@ export default {
       for (let i = 0; i < this.todos.length; i++) {
         this.todos[i].completed = true;
         this.todos[i].updatedDate = getCurrentDate();
+        this.todos[i].colorState = "has-text-success";
+        this.todos[i].iconState = "fa-circle-check";
       }
       saveLocalStorage("todos", this.todos, "array");
     },
@@ -559,5 +570,15 @@ i {
 
 .has-text-warning {
   color: var(--warning) !important;
+}
+
+#calendar {
+  display: flex;
+  justify-content: center;
+
+}
+
+.air-datepicker {
+  width: 100%;
 }
 </style>

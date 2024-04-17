@@ -43,8 +43,10 @@
         <template v-slot:content>
             <Field :name="$t('name')" v-model="selectedTodo.name" :disabled="readonly" />
             <Field :name="$t('description')" type="textarea" v-model="selectedTodo.description" :disabled="readonly" />
-            <Field :name="$t('createddate')" v-if="readonly" v-model="selectedTodo.createdDate" :disabled="readonly" />
-            <Field :name="$t('updateddate')" v-if="readonly" v-model="selectedTodo.updatedDate" :disabled="readonly" />
+            <!-- <Field :name="$t('createddate')" v-if="readonly" v-model="selectedTodo.createdDate" :disabled="readonly" />
+            <Field :name="$t('updateddate')" v-if="readonly" v-model="selectedTodo.updatedDate" :disabled="readonly" /> -->
+            <!-- <Field :name="$t('deadlinedate')" type="date" v-model="selectedTodo.deadlineDate" @change="" :disabled="readonly" /> -->
+
             <label class="label">{{ $t('state') }}</label>
             <div class="field">
                 <label class="checkbox">
@@ -111,6 +113,7 @@ export default {
             selectedTag:{},
             visible:false,
             readonly:false,
+            selectedDate:"",
         }
     },
     methods: {
@@ -182,6 +185,8 @@ export default {
 
 .card-bottom {
     display: flex;
+    flex-wrap: wrap;
+    gap:4px;
 }
 
 .card-info {
@@ -190,12 +195,12 @@ export default {
     display: flex;
     gap: 5px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .card-text {
-    max-width: 100px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis ;
 }
 
 .priority {

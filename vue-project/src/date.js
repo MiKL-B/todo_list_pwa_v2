@@ -4,3 +4,9 @@ export function getCurrentDate() {
     let date = currentDay + " - " + currentTime;
     return date;
 }
+
+
+export function getDate(){
+    let date = new Date().toLocaleDateString()
+    return date;
+}
