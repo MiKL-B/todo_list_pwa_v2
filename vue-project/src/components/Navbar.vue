@@ -7,10 +7,28 @@
                     <span class="icon">
                         <i class="fa-solid fa-list"></i>
                     </span>
-                    <span>Filters</span>
+                    <span>{{$t('lists')}}</span>
                 </p>
                 <ul class="menu-list">
-                    <NavItem :name="$t('all')" class="fa-regular fa-file" @action="setFilter(FILTER_ALL)" />
+                    <NavItem :name="$t('todos')" class="fa-solid fa-list-check" @action="setFilter(FILTER_ALL)" />
+                    <NavItem :name="$t('tags')" class="fa-solid fa-tags" @action="changeTab('Tags')" />
+                </ul>
+                <p class="menu-label">
+                    <span class="icon">
+                        <i class="fa-solid fa-display"></i>
+                    </span>
+                    <span>{{$t('view')}}</span>
+                </p>
+                <ul class="menu-list">
+                    <NavItem :name="$t('calendar')" class="fa-solid fa-calendar" @action="changeTab('Calendar')" />
+                </ul>
+                <p class="menu-label">
+                    <span class="icon">
+                        <i class="fa-solid fa-filter"></i>
+                    </span>
+                    <span>{{$t('filters')}}</span>
+                </p>
+                <ul class="menu-list">
                     <NavItem :name="$t('today')" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
                     <NavItem :name="$t('important')" class="fa-solid fa-triangle-exclamation"
                         @action="setFilter(FILTER_IMPORTANT)" />
@@ -24,7 +42,7 @@
                     <span class="icon">
                         <i class="fa-solid fa-list"></i>
                     </span>
-                    <span>Actions</span>
+                    <span>{{$t('actions')}}</span>
                 </p>
                 <ul class="menu-list">
                     <NavItem :name="$t('mark_all_as_completed')" class="fa-solid fa-circle-check"
@@ -32,16 +50,7 @@
                     <NavItem :name="$t('mark_all_as_uncompleted')" class="fa-solid fa-circle"
                         @action="markAllAsUncompleted" />
                     <NavItem :name="$t('clear_all_completed')" class="fa-solid fa-broom" @action="deleteAllTodos" />
-                </ul>
-                <p class="menu-label">
-                    <span class="icon">
-                        <i class="fa-solid fa-tags"></i>
-                    </span>
-                    <span>{{ $t('tags') }}</span>
-                </p>
-                <ul class="menu-list">
-                    <NavItem :name="$t('taglist')" class="fa-solid fa-tag" @action="changeTab('Tags')" />
-                </ul>
+                </ul>               
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-regular fa-file-code"></i>

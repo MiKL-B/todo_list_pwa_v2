@@ -4,6 +4,7 @@ const messages = {
         en:{
             // todos
             todolist:"Todo list",
+            todos:"Todos",
             todoremaining:"Task(s):",
             empty_todos:"Empty todos",
 
@@ -78,18 +79,24 @@ const messages = {
             empty_todo_name:"Cannot add todo with empty name",
             empty_tag_name:"Cannot add tag with empty name",
             exist_name:"The name already exists",
+            lists:"Lists",
+            filters:"Filters",
+            actions:"Actions",
+            view:"View",
+            calendar:"Calendar",
         },
         fr:{
             // todos
             todolist:"Liste de tâches",
+            todos:"Tâches",
             todoremaining:"Tâche(s):",
             empty_todos:"Liste de tâches vide",
 
             // tags
-            taglist:"Liste de tags",
-            tag:"Tag",
-            tags:"Tags",
-            empty_tags:"Liste de tags vide",
+            taglist:"Liste d'étiquettes ",
+            tag:"Étiquette",
+            tags:"Étiquettes",
+            empty_tags:"Liste d'étiquettes vide",
 
             // filter
             filter:"Filtre:",
@@ -151,11 +158,16 @@ const messages = {
             // notification
             todo_added:"La tâche est bien ajoutée",
             todo_deleted:"La tâche est bien supprimée",
-            tag_added:"Le tag est bien ajouté",
-            tag_deleted:"Le tag est bien supprimé",
+            tag_added:"L'étiquette est bien ajoutée",
+            tag_deleted:"L'étiquette est bien supprimée",
             empty_todo_name:"Le nom de la tâche ne peut être vide",
-            empty_tag_name:"Le nom du tag ne peut être vide",
+            empty_tag_name:"Le nom de l'étiquette ne peut être vide",
             exist_name:"Le nom existe déjà",
+            lists:"Listes",
+            filters:"Filtres",
+            actions:"Actions",
+            view:"Affichage",
+            calendar:"Calendrier",
         }
     }
 }

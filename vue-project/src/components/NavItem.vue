@@ -1,5 +1,5 @@
 <template>
-    <li @click="action">
+    <li @click="action" >
         <a>
             <span class="icon">
                 <i :class="class"></i>

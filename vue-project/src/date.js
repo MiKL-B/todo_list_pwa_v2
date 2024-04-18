@@ -6,7 +6,7 @@ export function getCurrentDate() {
 }
 
 
-export function getDate(){
-    let date = new Date().toLocaleDateString()
+export function getDate() {
+    var date = new Date().toISOString().slice(0, 10);
     return date;
 }

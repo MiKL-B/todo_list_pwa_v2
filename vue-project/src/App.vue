@@ -6,7 +6,7 @@
       @language="setLanguage">
     </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
-    <h2 class="title">{{ activeTab == 'Todos' ? $t('todolist') : $t('taglist') }}</h2>
+    <!-- <h2 class="title">{{ activeTab == 'Todos' ? $t('todolist') : $t('taglist') }}</h2> -->
   </div>
 
   <div class="container px-4">
@@ -29,7 +29,7 @@
       </div>
     </div>
     <!-- tags -->
-    <div v-else>
+    <div v-else-if="activeTab === 'Tags'">
       <Insert @add="addTag" v-model="newTag" />
       <div v-if="tags.length > 0">
         <Tag v-for="tag in tags" :key="tag.index" :tag="tag" :selectedTag="selectedTag" @edit="editTag" @read="readTag"
@@ -40,10 +40,16 @@
         <h2 class="subtitle">{{ $t('empty_tags') }}</h2>
       </div>
     </div>
+    <!-- calendar -->
+    <div v-else-if="activeTab === 'Calendar'">
+      <Calendar :events="events" />
+    </div>
   </div>
+
 </template>
 
 <script>
+import Calendar from '@/components/Calendar.vue';
 import Field from '@/components/Field.vue';
 import Modal from '@/components/Modal.vue';
 import Navbar from '@/components/Navbar.vue';
@@ -64,7 +70,7 @@ import { getRandomColor } from '@/random.js';
 export default {
   name: "App",
   components: {
-    Field, Modal, Navbar, Insert, Todo, Tag
+    Field, Modal, Navbar, Insert, Todo, Tag, Calendar
   },
   data() {
     return {
@@ -87,7 +93,7 @@ export default {
       FILTER_IMPORTANT: 5,
       // miscellaneous
       activeTab: "Todos",
-      visible: false,
+      events: getLocalStorage("events", "array")
     }
   },
   mounted() {
@@ -136,10 +142,19 @@ export default {
     },
   },
   methods: {
-
-    toggleModal() {
-      this.visible = !this.visible
+    addEvent(name, date, index) {
+      let event = {
+        title: name,
+        // with: "Chandler Bing",
+        time: { start: date, end: date }, //{ start: "2024-04-18 12:05", end: "2024-04-18 13:35" },
+        // color: "yellow",
+        isEditable: false,
+        id: index,
+        // description: ""
+      };
+      this.events.push(event);
     },
+
     // todos
     addTodo() {
       if (emptyName(this.newTodo)) {
@@ -166,7 +181,9 @@ export default {
         tags: [],
       }
       this.todos.push(todo);
+      this.addEvent(todo.name, todo.deadlineDate, todo.index);
       saveLocalStorage("todos", this.todos, "array");
+      saveLocalStorage("events", this.events, "array");
       notification("success", this.$t('todo_added'))
       this.newTodo = "";
     },
@@ -243,15 +260,23 @@ export default {
       }
       saveLocalStorage("todos", this.todos, "array");
     },
-
+    deleteEvent(index) {
+      for (let i = 0; i < this.events.length; i++) {
+        if (this.events[i].id === index) {
+          this.events.splice(i, 1)
+        }
+      }
+    },
     deleteTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
           this.todos.splice(i, 1)
         }
       }
+      this.deleteEvent(todo.index)
       notification("success", this.$t('todo_deleted'))
       saveLocalStorage("todos", this.todos, "array");
+      saveLocalStorage("events",this.events, "array")
     },
 
     saveTodo(todo) {
