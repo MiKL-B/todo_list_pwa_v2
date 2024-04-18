@@ -421,6 +421,7 @@ export default {
         const jsonData = {
           todos: this.todos,
           tags: this.tags,
+          events:this.events,
           language: this.$i18n.locale,
         }
 
@@ -450,6 +451,7 @@ export default {
           const jsonData = JSON.parse(e.target.result);
           this.todos = jsonData.todos
           this.tags = jsonData.tags
+          this.events = jsonData.events
           this.$i18n.locale = jsonData.language
           saveLocalStorage("todos", this.todos, "array");
         } catch (error) {
