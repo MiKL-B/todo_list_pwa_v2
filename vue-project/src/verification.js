@@ -14,3 +14,11 @@ export function existingName(arr, name) {
     }
     return isExist;
 }
+
+export function nameTooLong(name) {
+    let isTooLong = false;
+    if (name.length > 10) {
+        isTooLong = true;
+    }
+    return isTooLong
+}

@@ -17,7 +17,7 @@ export default {
                     // Hide leading and trailing dates in the month view (defaults to true when not set)
                     showTrailingAndLeadingDates: false,
                 },
-                locale: 'en-EN', // 'fr-FR'
+                locale: this.$i18n.locale === 'en' ? 'en-EN' : 'fr-FR', // 'fr-FR'
                 style: {
                     // When adding a custom font, please also set the fallback(s) yourself
                     fontFamily: 'Space Grotesk',

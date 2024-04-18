@@ -1,13 +1,14 @@
 <template>
-    <nav>
+    <nav >
         <i class="fa-solid fa-bars is-size-4 p-4 burger" @click="toggleNavBar"></i>
         <div v-if="visibleNavbar" class="navbar">
+         
             <aside class="menu pt-6 px-4">
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-solid fa-list"></i>
                     </span>
-                    <span>{{$t('lists')}}</span>
+                    <span>{{ $t('lists') }}</span>
                 </p>
                 <ul class="menu-list">
                     <NavItem :name="$t('todos')" class="fa-solid fa-list-check" @action="setFilter(FILTER_ALL)" />
@@ -17,7 +18,7 @@
                     <span class="icon">
                         <i class="fa-solid fa-display"></i>
                     </span>
-                    <span>{{$t('view')}}</span>
+                    <span>{{ $t('view') }}</span>
                 </p>
                 <ul class="menu-list">
                     <NavItem :name="$t('calendar')" class="fa-solid fa-calendar" @action="changeTab('Calendar')" />
@@ -26,7 +27,7 @@
                     <span class="icon">
                         <i class="fa-solid fa-filter"></i>
                     </span>
-                    <span>{{$t('filters')}}</span>
+                    <span>{{ $t('filters') }}</span>
                 </p>
                 <ul class="menu-list">
                     <NavItem :name="$t('today')" class="fa-regular fa-file" @action="setFilter(FILTER_TODAY)" />
@@ -42,7 +43,7 @@
                     <span class="icon">
                         <i class="fa-solid fa-list"></i>
                     </span>
-                    <span>{{$t('actions')}}</span>
+                    <span>{{ $t('actions') }}</span>
                 </p>
                 <ul class="menu-list">
                     <NavItem :name="$t('mark_all_as_completed')" class="fa-solid fa-circle-check"
@@ -50,7 +51,7 @@
                     <NavItem :name="$t('mark_all_as_uncompleted')" class="fa-solid fa-circle"
                         @action="markAllAsUncompleted" />
                     <NavItem :name="$t('clear_all_completed')" class="fa-solid fa-broom" @action="deleteAllTodos" />
-                </ul>               
+                </ul>
                 <p class="menu-label">
                     <span class="icon">
                         <i class="fa-regular fa-file-code"></i>

@@ -6,7 +6,7 @@
       @language="setLanguage">
     </Navbar>
     <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
-    <!-- <h2 class="title">{{ activeTab == 'Todos' ? $t('todolist') : $t('taglist') }}</h2> -->
+
   </div>
 
   <div class="container px-4">
@@ -45,7 +45,6 @@
       <Calendar :events="events" />
     </div>
   </div>
-
 </template>
 
 <script>
@@ -63,7 +62,7 @@ import Tag from '@/components/Tag.vue';
 
 import { createUuid } from '@/uuid.js';
 import { getCurrentDate, getDate } from '@/date.js';
-import { emptyName, existingName } from '@/verification.js';
+import { emptyName, existingName, nameTooLong } from '@/verification.js';
 import { notification } from '@/notification.js';
 import { getLocalStorage, saveLocalStorage } from '@/localstorage.js';
 import { getRandomColor } from '@/random.js';
@@ -276,7 +275,7 @@ export default {
       this.deleteEvent(todo.index)
       notification("success", this.$t('todo_deleted'))
       saveLocalStorage("todos", this.todos, "array");
-      saveLocalStorage("events",this.events, "array")
+      saveLocalStorage("events", this.events, "array")
     },
 
     saveTodo(todo) {
@@ -293,6 +292,11 @@ export default {
     addTag() {
       if (emptyName(this.newTag)) {
         notification("error", this.$t('empty_tag_name'))
+        return;
+      }
+      if (nameTooLong(this.newTag)) {
+        notification("error", this.$t('name_too_long'))
+        this.newTag = "";
         return;
       }
 
@@ -457,7 +461,8 @@ export default {
 
     setLanguage(language) {
       this.$i18n.locale = language;
-      saveLocalStorage("language", language);
+      saveLocalStorage("language", this.$i18n.locale);
+      this.changeTab("Todos");
     }
   }
 }
@@ -500,9 +505,8 @@ i {
 
 .nav {
   display: flex;
-  align-items: center;
-
 }
+
 
 .filters {
   display: flex;
@@ -606,4 +610,5 @@ i {
 .air-datepicker {
   width: 100%;
 }
+
 </style>
