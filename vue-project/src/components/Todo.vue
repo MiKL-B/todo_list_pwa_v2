@@ -45,8 +45,7 @@
             <Field :name="$t('description')" type="textarea" v-model="selectedTodo.description" :disabled="readonly" />
             <!-- <Field :name="$t('createddate')" v-if="readonly" v-model="selectedTodo.createdDate" :disabled="readonly" />
             <Field :name="$t('updateddate')" v-if="readonly" v-model="selectedTodo.updatedDate" :disabled="readonly" /> -->
-            <!-- <Field :name="$t('deadlinedate')" type="date" v-model="selectedTodo.deadlineDate" @change="" :disabled="readonly" /> -->
-
+            <Field :name="$t('deadlinedate')" type="date" v-model="selectedTodo.deadlineDate" @change="" :disabled="readonly" />
             <label class="label">{{ $t('state') }}</label>
             <div class="field">
                 <label class="checkbox">

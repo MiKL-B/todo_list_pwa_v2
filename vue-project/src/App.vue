@@ -202,7 +202,22 @@ export default {
         todo.iconState = "fa-circle";
       }
       todo.updatedDate = getCurrentDate();
+
+      for (let i = 0; i < this.events.length; i++) {
+        if (this.events[i].id === todo.index) {
+          if (todo.completed) {
+            this.events[i].color = "green";
+          }
+          else if (todo.completed === null) {
+            this.events[i].color = "yellow";
+          }
+          else {
+            this.events[i].color = "blue";
+          }
+        }
+      }
       saveLocalStorage("todos", this.todos, "array");
+      saveLocalStorage("events", this.events, "array")
     },
 
     assignTag(tag, todo) {
@@ -257,7 +272,7 @@ export default {
         todo.colorState = "";
         todo.iconState = "fa-circle";
       }
-      saveLocalStorage("todos", this.todos, "array");
+      saveLocalStorage("events", this.events, "array")
     },
     deleteEvent(index) {
       for (let i = 0; i < this.events.length; i++) {
@@ -285,7 +300,28 @@ export default {
           this.todos[i].updatedDate = getCurrentDate()
         }
       }
+      for (let i = 0; i < this.events.length; i++) {
+        if (this.events[i].id === todo.index) {
+          this.events[i].title = todo.name
+          this.events[i].time.start = todo.deadlineDate
+          this.events[i].time.end = todo.deadlineDate
+          if (todo.completed) {
+            this.events[i].color = "green";
+          }
+          else {
+            this.events[i].color = "blue";
+          }
+          if (todo.priority) {
+            this.events[i].description = "[Important]"
+          }
+          else {
+            this.events[i].description = ""
+          }
+          this.events[i].description += todo.description
+        }
+      }
       saveLocalStorage("todos", this.todos, "array");
+      saveLocalStorage("events", this.events, "array")
     },
 
     // tags
@@ -421,7 +457,7 @@ export default {
         const jsonData = {
           todos: this.todos,
           tags: this.tags,
-          events:this.events,
+          events: this.events,
           language: this.$i18n.locale,
         }
 
@@ -612,5 +648,4 @@ i {
 .air-datepicker {
   width: 100%;
 }
-
 </style>
