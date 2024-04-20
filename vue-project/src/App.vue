@@ -1,13 +1,9 @@
 <template>
-
-  <div class="nav">
-    <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
-      @uncompleted="markAllAsUncompleted" @delete="deleteAllCompleted" @export="exportJSON" @import="openFileInput"
-      @language="setLanguage">
-    </Navbar>
-    <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
-
-  </div>
+  <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
+    @uncompleted="markAllAsUncompleted" @delete="deleteAllCompleted" @export="exportJSON" @import="openFileInput"
+    @language="setLanguage">
+  </Navbar>
+  <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
 
   <div class="container px-4">
     <!-- todos -->
@@ -144,12 +140,11 @@ export default {
     addEvent(name, date, index) {
       let event = {
         title: name,
-        // with: "Chandler Bing",
+        color: "blue",
         time: { start: date, end: date }, //{ start: "2024-04-18 12:05", end: "2024-04-18 13:35" },
-        // color: "yellow",
         isEditable: false,
         id: index,
-        // description: ""
+        description: ""
       };
       this.events.push(event);
     },
@@ -312,7 +307,7 @@ export default {
             this.events[i].color = "blue";
           }
           if (todo.priority) {
-            this.events[i].description = "[Important]"
+            this.events[i].description = "<span class='has-text-danger'>[Important]</span><br>"
           }
           else {
             this.events[i].description = ""
@@ -541,11 +536,6 @@ i {
   justify-content: flex-end
 }
 
-.nav {
-  display: flex;
-}
-
-
 .filters {
   display: flex;
   justify-content: space-between;
@@ -556,8 +546,8 @@ i {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 5rem;
   opacity: 0.3;
+  height: 50vh;
 }
 
 .empty-list i {
@@ -638,14 +628,7 @@ i {
 .has-text-warning {
   color: var(--warning) !important;
 }
-
-#calendar {
-  display: flex;
-  justify-content: center;
-
-}
-
-.air-datepicker {
-  width: 100%;
+.has-text-black{
+  color:var(--dark) !important;
 }
 </style>
