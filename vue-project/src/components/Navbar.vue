@@ -1,11 +1,8 @@
 <template>
-    <nav>
-        <a role="button" class="navbar-burger is-size-4 has-text-black" aria-label="menu" aria-expanded="false"
-            :class="visibleNavbar ? 'is-active' : ''" @click="toggleNavBar">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
+    <nav class="pt-2">
+      
+        <a class="has-text-black burger  p-4 is-size-4" :class="visibleNavbar ? 'is-active' : ''" @click="toggleNavBar">
+            <i class="fa-solid fa-bars"></i>
         </a>
         <div class="navbar" v-if="visibleNavbar">
             <aside class="menu pt-6 px-4">
@@ -162,7 +159,7 @@ export default {
     z-index: 1;
 }
 
-.navbar-burger {
+.burger {
     position: relative;
     z-index: 3;
 }
