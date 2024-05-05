@@ -4,6 +4,7 @@ Cette application vous permet de gérer vos tâches au quotidien.
 Le projet est disponible à l'adresse suivante:
 https://todo-list-pwa-v2.vercel.app
 
+![TodoList](./vue-project/src/assets/todolist%20image.png)
 ## Fonctionnalités
 ### Tâches
 - Ajouter, modifier, consulter, supprimer des tâches
@@ -51,11 +52,22 @@ Une mention [Important] écrite en rouge sera affichée dans la description de l
 - L'application peut être traduite en français ou en anglais
 
 ## Installation
-1. Clonez le dépôt Git: git clone 
+1. Clonez le dépôt Git:
+```shell
+git clone https://github.com/MiKL-B/todo_list_pwa_v2.git
+```
+
 2. Installez les dépendances:
-    - cd .\vue-project
-    - npm install
-3. Lancez l'application: npm run dev
+```shell 
+cd .\vue-project
+```
+```shell 
+npm install
+```
+3. Lancez l'application:
+```shell 
+npm run dev
+```
 
 ## Technologies utilisées
 - Vue.js

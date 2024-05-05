@@ -79,6 +79,7 @@
                             </select>
                         </div>
                     </div>
+                    <NavItem :name="$t('about')" class="fa-solid fa-circle-info" @action="displayAbout" />
                 </ul>
             </aside>
         </div>
@@ -142,6 +143,10 @@ export default {
             this.$emit('language', this.language);
             this.visibleNavbar = false;
         },
+        displayAbout(){
+            this.$emit("about")
+            this.visibleNavbar = false;
+        }
     }
 }
 </script>

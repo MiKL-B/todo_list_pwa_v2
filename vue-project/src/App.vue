@@ -1,9 +1,24 @@
 <template>
-  <Navbar :tags="tags" @filter="setFilter" @tab="changeTab" @completed="markAllAsCompleted"
-    @uncompleted="markAllAsUncompleted" @delete="deleteAllCompleted" @export="exportJSON" @import="openFileInput"
-    @language="setLanguage">
+  <Navbar
+    :tags="tags"
+    @filter="setFilter"
+    @tab="changeTab"
+    @completed="markAllAsCompleted"
+    @uncompleted="markAllAsUncompleted"
+    @delete="deleteAllCompleted"
+    @export="exportJSON"
+    @import="openFileInput"
+    @language="setLanguage"
+    @about="toggleModalAbout"
+  >
   </Navbar>
-  <input type="file" ref="fileInput" style="display: none" @change="importJSON" accept=".json">
+  <input
+    type="file"
+    ref="fileInput"
+    style="display: none"
+    @change="importJSON"
+    accept=".json"
+  />
 
   <div class="container px-4">
     <!-- todos -->
@@ -11,61 +26,93 @@
       <Insert @add="addTodo" v-model="newTodo" />
       <div v-if="todos.length > 0">
         <div class="filters">
-          <label class="label">{{ $t('todoremaining') }} {{ remaining }}</label>
-          <label class="label">{{ $t('filter') }} {{ textFilter }}</label>
+          <label class="label">{{ $t("todoremaining") }} {{ remaining }}</label>
+          <label class="label">{{ $t("filter") }} {{ textFilter }}</label>
         </div>
-        <Todo v-for="todo in filteredTodos" :key="todo.index" :todo="todo" :selectedTodo="selectedTodo" :tags="tags"
-          @edit="editTodo" @read="readTodo" @delete="deleteTodo" @delete-todo-tag="deleteTodoTag"
-          @change-state="changeState" @save="saveTodo" @important="markAsImportant" @completed="markAsCompleted"
-          @assign="assignTag" />
+        <Todo
+          v-for="todo in filteredTodos"
+          :key="todo.index"
+          :todo="todo"
+          :selectedTodo="selectedTodo"
+          :tags="tags"
+          @edit="editTodo"
+          @read="readTodo"
+          @delete="deleteTodo"
+          @delete-todo-tag="deleteTodoTag"
+          @change-state="changeState"
+          @save="saveTodo"
+          @important="markAsImportant"
+          @completed="markAsCompleted"
+          @assign="assignTag"
+        />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
-        <h2 class="subtitle">{{ $t('empty_todos') }}</h2>
+        <h2 class="subtitle">{{ $t("empty_todos") }}</h2>
       </div>
     </div>
     <!-- tags -->
     <div v-else-if="activeTab === 'Tags'">
       <Insert @add="addTag" v-model="newTag" />
       <div v-if="tags.length > 0">
-        <Tag v-for="tag in tags" :key="tag.index" :tag="tag" :selectedTag="selectedTag" @edit="editTag" @read="readTag"
-          @delete="deleteTag" @save="saveTag" />
+        <Tag
+          v-for="tag in tags"
+          :key="tag.index"
+          :tag="tag"
+          :selectedTag="selectedTag"
+          @edit="editTag"
+          @read="readTag"
+          @delete="deleteTag"
+          @save="saveTag"
+        />
       </div>
       <div class="empty-list" v-else>
         <i class="fa-solid fa-mug-saucer"></i>
-        <h2 class="subtitle">{{ $t('empty_tags') }}</h2>
+        <h2 class="subtitle">{{ $t("empty_tags") }}</h2>
       </div>
     </div>
     <!-- calendar -->
     <div v-else-if="activeTab === 'Calendar'">
       <Calendar :events="events" />
     </div>
+    <!-- about -->
+    <Modal v-if="visibleAbout" @close="toggleModalAbout">
+      <template v-slot:content>
+        <div class="about_info" v-html="$t('about_info').split('\n').join('<br>')"></div>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script>
-import Calendar from '@/components/Calendar.vue';
-import Field from '@/components/Field.vue';
-import Modal from '@/components/Modal.vue';
-import Navbar from '@/components/Navbar.vue';
-import Insert from '@/components/Insert.vue';
+import Calendar from "@/components/Calendar.vue";
+import Field from "@/components/Field.vue";
+import Modal from "@/components/Modal.vue";
+import Navbar from "@/components/Navbar.vue";
+import Insert from "@/components/Insert.vue";
 
 // Todos
-import Todo from '@/components/Todo.vue';
+import Todo from "@/components/Todo.vue";
 
 // Tags
-import Tag from '@/components/Tag.vue';
+import Tag from "@/components/Tag.vue";
 
-import { createUuid } from '@/uuid.js';
-import { getCurrentDate, getDate } from '@/date.js';
-import { emptyName, existingName, nameTooLong } from '@/verification.js';
-import { notification } from '@/notification.js';
-import { getLocalStorage, saveLocalStorage } from '@/localstorage.js';
-import { getRandomColor } from '@/random.js';
+import { createUuid } from "@/uuid.js";
+import { getCurrentDate, getDate } from "@/date.js";
+import { emptyName, existingName, nameTooLong } from "@/verification.js";
+import { notification } from "@/notification.js";
+import { getLocalStorage, saveLocalStorage } from "@/localstorage.js";
+import { getRandomColor } from "@/random.js";
 export default {
   name: "App",
   components: {
-    Field, Modal, Navbar, Insert, Todo, Tag, Calendar
+    Field,
+    Modal,
+    Navbar,
+    Insert,
+    Todo,
+    Tag,
+    Calendar,
   },
   data() {
     return {
@@ -88,52 +135,55 @@ export default {
       FILTER_IMPORTANT: 5,
       // miscellaneous
       activeTab: "Todos",
-      events: getLocalStorage("events", "array")
-    }
+      events: getLocalStorage("events", "array"),
+      visibleAbout: false,
+    };
   },
   mounted() {
     // filter
-    this.setFilter(this.FILTER_ALL)
+    this.setFilter(this.FILTER_ALL);
     // miscellaneous
-    let localLanguage = localStorage.getItem('language');
+    let localLanguage = localStorage.getItem("language");
     if (localLanguage == null) {
-      localLanguage = 'en';
+      localLanguage = "en";
     }
-    this.setLanguage(localLanguage)
+    this.setLanguage(localLanguage);
   },
   computed: {
     filteredTodos() {
       let filteredList = this.todos;
       switch (this.currentFilter) {
         case this.FILTER_ALL:
-          this.textFilter = this.$t('all');
+          this.textFilter = this.$t("all");
           filteredList = this.todos;
           break;
         case this.FILTER_TODAY:
-          this.textFilter = this.$t('today');
+          this.textFilter = this.$t("today");
           let currentDay = new Date().toLocaleDateString();
-          filteredList = this.todos.filter(todo => todo.createdDate.includes(currentDay));
+          filteredList = this.todos.filter((todo) =>
+            todo.createdDate.includes(currentDay)
+          );
           break;
         case this.FILTER_COMPLETED:
-          this.textFilter = this.$t('completed');
-          filteredList = this.todos.filter(todo => todo.completed);
+          this.textFilter = this.$t("completed");
+          filteredList = this.todos.filter((todo) => todo.completed);
           break;
         case this.FILTER_UNCOMPLETED:
-          this.textFilter = this.$t('uncompleted');
-          filteredList = this.todos.filter(todo => !todo.completed);
+          this.textFilter = this.$t("uncompleted");
+          filteredList = this.todos.filter((todo) => !todo.completed);
           break;
         case this.FILTER_IMPORTANT:
-          this.textFilter = this.$t('important');
-          filteredList = this.todos.filter(todo => todo.priority === true);
+          this.textFilter = this.$t("important");
+          filteredList = this.todos.filter((todo) => todo.priority === true);
           break;
         default:
           this.textFilter = this.currentFilter;
-          filteredList = this.todos.filter(todo => {
-            return todo.tags.some(tag => tag.name === this.currentFilter);
+          filteredList = this.todos.filter((todo) => {
+            return todo.tags.some((tag) => tag.name === this.currentFilter);
           });
       }
       this.remaining = filteredList.length;
-      return filteredList
+      return filteredList;
     },
   },
   methods: {
@@ -144,7 +194,7 @@ export default {
         time: { start: date, end: date }, //{ start: "2024-04-18 12:05", end: "2024-04-18 13:35" },
         isEditable: false,
         id: index,
-        description: ""
+        description: "",
       };
       this.events.push(event);
     },
@@ -152,11 +202,11 @@ export default {
     // todos
     addTodo() {
       if (emptyName(this.newTodo)) {
-        notification("error", this.$t('empty_todo_name'))
+        notification("error", this.$t("empty_todo_name"));
         return;
       }
       if (existingName(this.todos, this.newTodo)) {
-        notification("error", this.$t('exist_name'))
+        notification("error", this.$t("exist_name"));
         this.newTodo = "";
         return;
       }
@@ -173,12 +223,12 @@ export default {
         iconState: "fa-circle",
         priority: false,
         tags: [],
-      }
+      };
       this.todos.push(todo);
       this.addEvent(todo.name, todo.deadlineDate, todo.index);
       saveLocalStorage("todos", this.todos, "array");
       saveLocalStorage("events", this.events, "array");
-      notification("success", this.$t('todo_added'))
+      notification("success", this.$t("todo_added"));
       this.newTodo = "";
     },
 
@@ -202,17 +252,15 @@ export default {
         if (this.events[i].id === todo.index) {
           if (todo.completed) {
             this.events[i].color = "green";
-          }
-          else if (todo.completed === null) {
+          } else if (todo.completed === null) {
             this.events[i].color = "yellow";
-          }
-          else {
+          } else {
             this.events[i].color = "blue";
           }
         }
       }
       saveLocalStorage("todos", this.todos, "array");
-      saveLocalStorage("events", this.events, "array")
+      saveLocalStorage("events", this.events, "array");
     },
 
     assignTag(tag, todo) {
@@ -225,7 +273,7 @@ export default {
         }
       }
       if (todo.tags.length < 3) {
-        todo.tags.push(tag)
+        todo.tags.push(tag);
         saveLocalStorage("todos", this.todos, "array");
       }
     },
@@ -262,77 +310,75 @@ export default {
       if (todo.completed) {
         todo.colorState = "has-text-success";
         todo.iconState = "fa-circle-check";
-      }
-      else {
+      } else {
         todo.colorState = "";
         todo.iconState = "fa-circle";
       }
-      saveLocalStorage("events", this.events, "array")
+      saveLocalStorage("events", this.events, "array");
     },
     deleteEvent(index) {
       for (let i = 0; i < this.events.length; i++) {
         if (this.events[i].id === index) {
-          this.events.splice(i, 1)
+          this.events.splice(i, 1);
         }
       }
     },
     deleteTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
-          this.todos.splice(i, 1)
+          this.todos.splice(i, 1);
         }
       }
-      this.deleteEvent(todo.index)
-      notification("success", this.$t('todo_deleted'))
+      this.deleteEvent(todo.index);
+      notification("success", this.$t("todo_deleted"));
       saveLocalStorage("todos", this.todos, "array");
-      saveLocalStorage("events", this.events, "array")
+      saveLocalStorage("events", this.events, "array");
     },
 
     saveTodo(todo) {
       for (let i = 0; i < this.todos.length; i++) {
         if (this.todos[i].index === todo.index) {
           this.todos[i] = { ...todo };
-          this.todos[i].updatedDate = getCurrentDate()
+          this.todos[i].updatedDate = getCurrentDate();
         }
       }
       for (let i = 0; i < this.events.length; i++) {
         if (this.events[i].id === todo.index) {
-          this.events[i].title = todo.name
-          this.events[i].time.start = todo.deadlineDate
-          this.events[i].time.end = todo.deadlineDate
+          this.events[i].title = todo.name;
+          this.events[i].time.start = todo.deadlineDate;
+          this.events[i].time.end = todo.deadlineDate;
           if (todo.completed) {
             this.events[i].color = "green";
-          }
-          else {
+          } else {
             this.events[i].color = "blue";
           }
           if (todo.priority) {
-            this.events[i].description = "<span class='has-text-danger'>[Important]</span><br>"
+            this.events[i].description =
+              "<span class='has-text-danger'>[Important]</span><br>";
+          } else {
+            this.events[i].description = "";
           }
-          else {
-            this.events[i].description = ""
-          }
-          this.events[i].description += todo.description
+          this.events[i].description += todo.description;
         }
       }
       saveLocalStorage("todos", this.todos, "array");
-      saveLocalStorage("events", this.events, "array")
+      saveLocalStorage("events", this.events, "array");
     },
 
     // tags
     addTag() {
       if (emptyName(this.newTag)) {
-        notification("error", this.$t('empty_tag_name'))
+        notification("error", this.$t("empty_tag_name"));
         return;
       }
       if (nameTooLong(this.newTag)) {
-        notification("error", this.$t('name_too_long'))
+        notification("error", this.$t("name_too_long"));
         this.newTag = "";
         return;
       }
 
       if (existingName(this.tags, this.newTag)) {
-        notification("error", this.$t('exist_name'))
+        notification("error", this.$t("exist_name"));
         this.newTag = "";
         return;
       }
@@ -344,9 +390,9 @@ export default {
         updatedDate: getCurrentDate(),
         color: getRandomColor(),
         icon: "fa-solid fa-tag",
-      }
+      };
       this.tags.push(tag);
-      notification("success", this.$t('tag_added'))
+      notification("success", this.$t("tag_added"));
       this.newTag = "";
       saveLocalStorage("tags", this.tags, "array");
     },
@@ -371,12 +417,14 @@ export default {
         }
       }
       // delete right tag
-      const globalTagIndex = this.tags.findIndex(el => el.index === tag.index);
+      const globalTagIndex = this.tags.findIndex(
+        (el) => el.index === tag.index
+      );
       if (globalTagIndex !== -1) {
         this.tags.splice(globalTagIndex, 1);
         saveLocalStorage("tags", this.tags, "array");
       }
-      notification("success", this.$t('tag_deleted'))
+      notification("success", this.$t("tag_deleted"));
     },
 
     saveTag(tag) {
@@ -386,7 +434,7 @@ export default {
           this.tags[i] = { ...tag };
           this.tags[i].icon = tag.icon;
           this.tags[i].color = tag.color;
-          this.tags[i].updatedDate = getCurrentDate()
+          this.tags[i].updatedDate = getCurrentDate();
 
           for (let j = 0; j < this.todos.length; j++) {
             for (let k = 0; k < this.todos[j].tags.length; k++) {
@@ -406,7 +454,7 @@ export default {
     // filter
     setFilter(type) {
       this.currentFilter = type;
-      this.changeTab('Todos')
+      this.changeTab("Todos");
     },
 
     markAllAsUncompleted() {
@@ -447,16 +495,22 @@ export default {
     },
 
     exportJSON() {
-      if (window.confirm('Are you sure you want to export and download your data ?')) {
-        let filename = prompt('Enter the name of the export file.', 'todos')
+      if (
+        window.confirm(
+          "Are you sure you want to export and download your data ?"
+        )
+      ) {
+        let filename = prompt("Enter the name of the export file.", "todos");
         const jsonData = {
           todos: this.todos,
           tags: this.tags,
           events: this.events,
           language: this.$i18n.locale,
-        }
+        };
 
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(jsonData));
         const downloadLink = document.createElement("a");
         downloadLink.setAttribute("href", dataStr);
         downloadLink.setAttribute("download", `${filename}.json`);
@@ -480,10 +534,10 @@ export default {
       reader.onload = (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
-          this.todos = jsonData.todos
-          this.tags = jsonData.tags
-          this.events = jsonData.events
-          this.$i18n.locale = jsonData.language
+          this.todos = jsonData.todos;
+          this.tags = jsonData.tags;
+          this.events = jsonData.events;
+          this.$i18n.locale = jsonData.language;
           saveLocalStorage("todos", this.todos, "array");
         } catch (error) {
           console.error("Erreur lors de la lecture du fichier JSON : " + error);
@@ -496,14 +550,16 @@ export default {
       this.$i18n.locale = language;
       saveLocalStorage("language", this.$i18n.locale);
       this.changeTab("Todos");
-    }
-  }
-}
-
+    },
+    toggleModalAbout() {
+      this.visibleAbout = !this.visibleAbout;
+    },
+  },
+};
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
 
 body {
   height: 100vh;
@@ -512,9 +568,8 @@ body {
 body,
 input,
 button {
-  font-family: 'Space Grotesk';
+  font-family: "Space Grotesk";
 }
-
 
 i {
   cursor: pointer;
@@ -533,7 +588,7 @@ i {
 
 .cta {
   display: flex;
-  justify-content: flex-end
+  justify-content: flex-end;
 }
 
 .filters {
@@ -598,7 +653,7 @@ i {
 /* overrride toastify class */
 .Toastify__toast-theme--colored.Toastify__toast--success {
   background: var(--success);
-  color: #3D3D3D;
+  color: #3d3d3d;
   font-family: "Space Grotesk";
 }
 
@@ -628,7 +683,11 @@ i {
 .has-text-warning {
   color: var(--warning) !important;
 }
-.has-text-black{
-  color:var(--dark) !important;
+.has-text-black {
+  color: var(--dark) !important;
+}
+.about_info{
+  height:500px;
+  overflow-y: scroll;
 }
 </style>
